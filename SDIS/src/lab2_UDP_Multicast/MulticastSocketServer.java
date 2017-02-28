@@ -48,7 +48,7 @@ public class MulticastSocketServer {
 		};
 
 		int initialDelay = 0;
-		int period = 10;
+		int period = 40;
 		executor.scheduleAtFixedRate(task, initialDelay, period, TimeUnit.SECONDS);
 
 		//escutar se algum cliente está a mandar dados
@@ -75,14 +75,14 @@ public class MulticastSocketServer {
 
 				if((register.equals("REGISTER <")) && (plateRegister.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") 
 						&& zzRegister =='>' && beforenameRegister == '<' && endRegister == '>' )){
-					t = "modo registo activado ... estamos a registar o seu pedido";
+					t = "\nModo registo activado ... estamos a registar o seu pedido";
 					plates.put(plateRegister,nomeRegister);
 
-					t += System.lineSeparator() + "registado com sucesso."  + System.lineSeparator() 
-					+ "matricula: " + plateRegister + " " + "nome: " + plates.get(plateRegister); 					
+					t += System.lineSeparator() + "\nRegistado com sucesso."  + System.lineSeparator() 
+					+ "Matricula: " + plateRegister + " " + "Dono: " + plates.get(plateRegister); 					
 				}
 			}
-			if(s.charAt(0) == 'L'){
+			else if(s.charAt(0) == 'L'){
 				String lookup = s.substring(0, 8);
 				String plateLookup = s.substring(8,16);
 				char endLookup = s.charAt(s.length()-1);
@@ -92,17 +92,17 @@ public class MulticastSocketServer {
 				echo(packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
 
 				if((lookup.equals("LOOKUP <")) && (plateLookup.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") && endLookup == '>' )){
-					t = "estamos à procura do dono da matricula e se a mesma existe....  " + plates.get(plateLookup);
+					t = "\nEstamos à procura do dono da matricula e se a mesma existe....  " + plateLookup;
 					if(plates.get(plateLookup) == null){
 						t += System.lineSeparator() + " nao existe a matricula " + plateLookup + " registada.";
 					}
 					else{
-						t += System.lineSeparator() + "o dono da matricula: " + plates.get(plateLookup);						}	
+						t += System.lineSeparator() + "\nO dono da matricula: " + plates.get(plateLookup);						}	
 				}
 			}
-			else if( (s.charAt(0) != 'L') && (s.charAt(0) != 'R')){
-				echo("mensagem recebida do cliente, com erro de syntax : " + s);
-				t += " a ligar com o servidor...., mensagem com erro de syntax";
+			else{
+				echo("\nMensagem recebida do cliente, com erro de syntax : " + s);
+				t += "\nA ligar com o servidor...., mensagem com erro de syntax\n";
 			}			
 			
 				

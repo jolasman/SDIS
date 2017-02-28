@@ -54,7 +54,7 @@ public class MulticastSocketClient {
 
 			while(true){
 				//take input and send the packet
-				echo("Multicast --> Enter message to send : ");
+				echo("\n\n\nMulticast --> Enter message to send : ");
 				t = (String)cin.readLine();
 				byte[] b = t.getBytes();
 
@@ -77,7 +77,7 @@ public class MulticastSocketClient {
 				echo(example);
 
 				//echo the details of incoming data - client ip : client port - client message
-				echo("Mensagem recebida: (servidor e porta) "  + reply.getAddress().getHostAddress() + " : " + reply.getPort() + 
+				echo("\nMensagem recebida de (servidor - porta) "  + reply.getAddress().getHostAddress() + " - " + reply.getPort()+ ": " + 
 						System.lineSeparator() + s);
 			}
 
