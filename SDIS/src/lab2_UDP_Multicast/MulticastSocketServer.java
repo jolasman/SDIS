@@ -53,11 +53,11 @@ public class MulticastSocketServer {
 
 		//escutar se algum cliente está a mandar dados
 		System.out.println("Server started");
-		
-		
-		
+
+
+
 		while (true) {
-			
+
 			socket.receive(packet);
 			byte[] data = packet.getData();
 			String s = new String(data, 0, packet.getLength());
@@ -65,48 +65,61 @@ public class MulticastSocketServer {
 
 			if(s.charAt(0) == 'R'){
 				String register = s.substring(0, 10);
-				String plateRegister = s.substring(10,18);
-				char zzRegister = s.charAt(18);
-				char beforenameRegister = s.charAt(20);
-				String nomeRegister = s.substring(21,s.length()-1);
-				char endRegister = s.charAt(s.length()-1);
+
 				//echo the details of incoming data - client ip : client port - client message
 				echo(packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
+				if(register.equals("REGISTER <")){
+					String plateRegister = s.substring(10,18);
+					char zzRegister = s.charAt(18);
+					char beforenameRegister = s.charAt(20);
+					String nomeRegister = s.substring(21,s.length()-1);
+					char endRegister = s.charAt(s.length()-1);
+					if((register.equals("REGISTER <")) && (plateRegister.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") 
+							&& zzRegister =='>' && beforenameRegister == '<' && endRegister == '>' )){
+						t = "\nModo registo activado ... estamos a registar o seu pedido";
+						plates.put(plateRegister,nomeRegister);
 
-				if((register.equals("REGISTER <")) && (plateRegister.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") 
-						&& zzRegister =='>' && beforenameRegister == '<' && endRegister == '>' )){
-					t = "\nModo registo activado ... estamos a registar o seu pedido";
-					plates.put(plateRegister,nomeRegister);
-
-					t += System.lineSeparator() + "\nRegistado com sucesso."  + System.lineSeparator() 
-					+ "Matricula: " + plateRegister + " " + "Dono: " + plates.get(plateRegister); 					
+						t += System.lineSeparator() + "\nRegistado com sucesso."  + System.lineSeparator() 
+						+ "Matricula: " + plateRegister + " " + "Dono: " + plates.get(plateRegister); 					
+					}
+				}
+				else{
+					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
+							"\n\n syntax: REGISTER <nn-nn-ll> <nome>\n";
 				}
 			}
 			else if(s.charAt(0) == 'L'){
 				String lookup = s.substring(0, 8);
-				String plateLookup = s.substring(8,16);
-				char endLookup = s.charAt(s.length()-1);
+
 
 
 				//echo the details of incoming data - client ip : client port - client message
 				echo(packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
 
-				if((lookup.equals("LOOKUP <")) && (plateLookup.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") && endLookup == '>' )){
-					t = "\nEstamos à procura do dono da matricula e se a mesma existe....  " + plateLookup;
-					if(plates.get(plateLookup) == null){
-						t += System.lineSeparator() + " nao existe a matricula " + plateLookup + " registada.";
+				if(lookup.equals("LOOKUP <")){
+					String plateLookup = s.substring(8,16);
+					char endLookup = s.charAt(s.length()-1);
+					if((lookup.equals("LOOKUP <")) && (plateLookup.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") && endLookup == '>' )){
+						t = "\nEstamos à procura do dono da matricula e se a mesma existe....  " + plateLookup;
+						if(plates.get(plateLookup) == null){
+							t += System.lineSeparator() + " nao existe a matricula " + plateLookup + " registada.";
+						}
+						else{
+							t += System.lineSeparator() + "\nO dono da matricula: " + plates.get(plateLookup);						}	
 					}
-					else{
-						t += System.lineSeparator() + "\nO dono da matricula: " + plates.get(plateLookup);						}	
+				}else{
+					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
+							"\n\n syntax: LOOKUP <nn-nn-ll>\n";
 				}
 			}
 			else{
 				echo("\nMensagem recebida do cliente, com erro de syntax : " + s);
-				t += "\nA ligar com o servidor...., mensagem com erro de syntax\n";
+				t += "\nA ligar com o servidor...., mensagem com erro de syntax\n"+
+						"\n\n syntax: LOOKUP <nn-nn-ll>" + " or REGISTER <nn-nn-ll> <nome>\n";
 			}			
-			
-				
-						
+
+
+
 
 			DatagramPacket dp = new DatagramPacket(t.getBytes() , t.getBytes().length , mcastAddr, mcastPORT);
 			socket.send(dp);
