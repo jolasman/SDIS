@@ -57,12 +57,12 @@ public class MulticastSocketServer {
 		
 		//escutar se algum cliente está a mandar dados
 		System.out.println("Server started");
-		DatagramSocket sock = new DatagramSocket();
+		
 		while (true) {
 			
 			byte[] buffer = new byte[65000];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			sock.receive(packet);
+			socket.receive(packet);
 			byte[] data = packet.getData();
 			String s = new String(data, 0, packet.getLength());
 			String t = "";
@@ -120,7 +120,7 @@ public class MulticastSocketServer {
 				t += "\nA ligar com o servidor...., mensagem com erro de syntax\n"+
 						"\n\n syntax: LOOKUP <nn-nn-ll>" + " or REGISTER <nn-nn-ll> <nome>\n";
 			}			
-
+			DatagramSocket sock = new DatagramSocket();
 			DatagramPacket dp = new DatagramPacket(t.getBytes() , t.getBytes().length , packet.getAddress(), packet.getPort());
 			sock.send(dp);
 		}

@@ -35,6 +35,7 @@ public class MulticastSocketClient {
 		boolean not_connected = true;
 		int i = 0;
 		InetAddress srvcAddr = null;
+
 		int srvcPort = 0;
 		String raw_data = null;
 
@@ -48,22 +49,24 @@ public class MulticastSocketClient {
 			not_connected = false;
 		}
 
+		DatagramSocket sock = new DatagramSocket();
+		
 		try{
-				DatagramSocket sock = new DatagramSocket();
+				
 			while(true){
 				
 				//take input and send the packet
 				echo("\n\n\nMulticast --> Enter message to send : ");
 				t = (String)cin.readLine();
 				byte[] b = t.getBytes();
-
-				DatagramPacket  dp = new DatagramPacket(b , b.length , packet.getAddress(), packet.getPort());
+				
+				DatagramPacket  dp = new DatagramPacket(b , b.length , srvcAddr, srvcPort);
 				sock.send(dp);
 
 				//now receive reply
 				//buffer to receive incoming data
 				byte[] buffer1 = new byte[65536];
-				DatagramPacket reply = new DatagramPacket(buffer1, buffer1.length, packet.getAddress(),packet.getPort());
+				DatagramPacket reply = new DatagramPacket(buffer1, buffer1.length);
 				sock.receive(reply);
 
 				byte[] data = reply.getData();
