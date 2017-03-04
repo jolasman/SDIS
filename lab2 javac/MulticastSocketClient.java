@@ -58,6 +58,9 @@ public class MulticastSocketClient {
 				//take input and send the packet
 				echo("\n\n\nMulticast --> Enter message to send : ");
 				t = (String)cin.readLine();
+				if(t.equalsIgnoreCase("Exit")){
+					 System.exit(0);
+				}else{
 				byte[] b = t.getBytes();
 				
 				DatagramPacket  dp = new DatagramPacket(b , b.length , srvcAddr, srvcPort);
@@ -77,6 +80,7 @@ public class MulticastSocketClient {
 				//echo the details of incoming data - client ip : client port - client message
 				echo("\nMensagem recebida de (servidor - porta) "  + reply.getAddress().getHostAddress() + " - " + reply.getPort()+ ": " + 
 						System.lineSeparator() + s);
+			}
 			}
 
 		}catch(IOException e)

@@ -26,7 +26,7 @@ public class MulticastSocketServer {
 		InetAddress mcastAddr = InetAddress.getByName(args[1]);
 		int mcastPORT = Integer.parseInt(args[2]);
 		Map<String, String> plates = new HashMap<String, String>();
-	
+		BufferedReader cin = new BufferedReader(new InputStreamReader(System.in));
 		InetAddress hostAddr = InetAddress.getLocalHost();
 		MulticastSocket socket = new MulticastSocket(PORT);
 		socket.joinGroup(mcastAddr);
@@ -47,6 +47,7 @@ public class MulticastSocketServer {
 					socket.send(autoPacket);
 
 					System.out.println("Sending multicast with message: " + " (Host Adress + PORT) " + outMessage);
+				
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					System.out.println("Failed to multicast");
@@ -94,8 +95,6 @@ public class MulticastSocketServer {
 			else if(s.charAt(0) == 'L'){
 				String lookup = s.substring(0, 8);
 
-
-
 				//echo the details of incoming data - client ip : client port - client message
 				echo(packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
 
@@ -105,13 +104,13 @@ public class MulticastSocketServer {
 					if((lookup.equals("LOOKUP <")) && (plateLookup.matches("^(\\d{2}-?\\d{2}-?\\w{2})$") && endLookup == '>' )){
 						t = "\nEstamos à procura do dono da matricula e se a mesma existe....  " + plateLookup;
 						if(plates.get(plateLookup) == null){
-							t += System.lineSeparator() + " nao existe a matricula " + plateLookup + " registada.";
+							t += System.lineSeparator() + "\nNao existe a matricula " + plateLookup + " registada.";
 						}
 						else{
 							t += System.lineSeparator() + "\nO dono da matricula: " + plates.get(plateLookup);						}	
 					}
 				}else{
-					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
+					t+= System.lineSeparator() + "\nMensagem enviado com erro de syntax. "+
 							"\n\n syntax: LOOKUP <nn-nn-ll>\n";
 				}
 			}
@@ -123,6 +122,7 @@ public class MulticastSocketServer {
 			DatagramSocket sock = new DatagramSocket();
 			DatagramPacket dp = new DatagramPacket(t.getBytes() , t.getBytes().length , packet.getAddress(), packet.getPort());
 			sock.send(dp);
+			
 		}
 	}
 
