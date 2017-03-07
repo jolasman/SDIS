@@ -67,19 +67,23 @@ public class MulticastSocketServer {
 			String messageReceived = s.trim();
 			String message[] = messageReceived.split(" ");
 			String t = "";
-			echo("\nMensagem recebida do Cliente: \n" + s +"\n");
+
 			if(message[0].equalsIgnoreCase("Register")){
 				//echo the details of incoming data - client ip : client port - client message
-				echo(packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
+				echo("\n" + packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
+				if(message.length > 3 || message.length < 3 ){
+					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
+							"\n\n syntax: REGISTER <nn-nn-ll> <nome>\n";
+				}
+				else if(message[1].matches("^(\\d{2}-?\\d{2}-?\\w{2})$")){
 
-				if(message[1].matches("^(\\d{2}-?\\d{2}-?\\w{2})$") ){
 					t = "\nModo registo activado ... estamos a registar o seu pedido";
 					plates.put(message[1], message[2]);
 
 					t += System.lineSeparator() + "\nRegistado com sucesso."  + System.lineSeparator() 
 					+ "Matricula: " + message[1] + " " + "Dono: " + plates.get(message[1]); 					
-
 				}
+
 				else{
 					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
 							"\n\n syntax: REGISTER <nn-nn-ll> <nome>\n";
@@ -87,8 +91,13 @@ public class MulticastSocketServer {
 			}
 			else if( message[0].equalsIgnoreCase("Lookup")){
 				//echo the details of incoming data - client ip : client port - client message
-				echo(packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);			
-				if((message[1].matches("^(\\d{2}-?\\d{2}-?\\w{2})$"))){
+				echo("\n" + packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);			
+
+				if(message.length > 2 || message.length < 2){
+					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
+							"\n\n syntax: REGISTER <nn-nn-ll> <nome>\n";
+				}
+				else if((message[1].matches("^(\\d{2}-?\\d{2}-?\\w{2})$"))){
 					t = "\nEstamos à procura do dono da matricula e se a mesma existe....  " + message[1];
 					if(plates.get(message[1]) == null){
 						t += System.lineSeparator() + "\nNao existe a matricula " + message[1] + " registada.";
@@ -103,6 +112,7 @@ public class MulticastSocketServer {
 				}
 			}
 			else{
+				echo("\n" + packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);	
 				t += "\nA ligar com o servidor...., mensagem com erro de syntax\n"+
 						"\n\n syntax: LOOKUP <nn-nn-ll>" + " or REGISTER <nn-nn-ll> <nome>\n";
 			}			
