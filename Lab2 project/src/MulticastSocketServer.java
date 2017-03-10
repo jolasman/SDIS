@@ -57,11 +57,13 @@ public class MulticastSocketServer {
 		//escutar se algum cliente está a mandar dados
 		System.out.println("Server started");
 
+		DatagramSocket sock = new DatagramSocket(PORT,hostAddr);
+		
 		while (true) {
-
+			
 			byte[] buffer = new byte[65000];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			socket.receive(packet);
+			sock.receive(packet);
 			byte[] data = packet.getData();
 			String s = new String(data, 0, packet.getLength());
 			String messageReceived = s.trim();
@@ -71,7 +73,7 @@ public class MulticastSocketServer {
 			if(message[0].equalsIgnoreCase("Register")){
 				//echo the details of incoming data - client ip : client port - client message
 				echo("\n" + packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);
-				if(message.length > 3 || message.length < 3 ){
+				if(message.length != 3 ){
 					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
 							"\n\n syntax: REGISTER <nn-nn-ll> <nome>\n";
 				}
@@ -93,7 +95,7 @@ public class MulticastSocketServer {
 				//echo the details of incoming data - client ip : client port - client message
 				echo("\n" + packet.getAddress().getHostAddress() + " : " + packet.getPort() + " - " + s);			
 
-				if(message.length > 2 || message.length < 2){
+				if(message.length != 2){
 					t+= System.lineSeparator() + "\n Mensagem enviado com erro de syntax. "+
 							"\n\n syntax: REGISTER <nn-nn-ll> <nome>\n";
 				}
@@ -116,12 +118,14 @@ public class MulticastSocketServer {
 				t += "\nA ligar com o servidor...., mensagem com erro de syntax\n"+
 						"\n\n syntax: LOOKUP <nn-nn-ll>" + " or REGISTER <nn-nn-ll> <nome>\n";
 			}			
-			DatagramSocket sock = new DatagramSocket();
+			
 			DatagramPacket dp = new DatagramPacket(t.getBytes() , t.getBytes().length , packet.getAddress(), packet.getPort());
 			sock.send(dp);
 			echo("Mensagem enviada como resposta: \n" + t + "\n");
 
+		
 		}
+		
 	}
 
 	public static void echo(String msg)
