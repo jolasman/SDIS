@@ -1,6 +1,9 @@
-/chunk/
-/inicializacao/
-/utils/
 /EspacoEmDisco/
 /basededados/
+/chunk/
+/inicializacao/
 /peer/
+/utils/
+/Interface.class
+/FileManagement/
+/Interface/
