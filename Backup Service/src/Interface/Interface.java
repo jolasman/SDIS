@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import FileManagement.FileToCkunk;
-import FileManagement.MergeChunks;;
+import FileManagement.MergeChunks;
+import FileManagement.FileManager;
 
 public class Interface {
 
@@ -38,10 +39,12 @@ public class Interface {
 			switch (menuItem) {
 			case 1:
 				
-				File file_initiator = new File("./Files/imagem.jpg");
-				FileToCkunk initial_file = new FileToCkunk(file_initiator);
-				MergeChunks merged_file = new MergeChunks(initial_file.getChunks(),new File("./Files/file_merged.jpg"));
+				FileManager files = new FileManager();
 				
+				/*File file_initiator = new File("./Files/comprovativo.pdf");
+				FileToCkunk initial_file = new FileToCkunk(file_initiator,"pdf");
+				MergeChunks merged_file = new MergeChunks(initial_file.getChunks(),new File("./Files/file_merged.pdf"));
+				*/
 				// do something...
 				break;
 			case 2:
