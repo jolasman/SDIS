@@ -17,7 +17,7 @@ public class FileToCkunk {
 	public ArrayList<File> chunks = new ArrayList<File>();
 	public String fileID;
 
-	public FileToCkunk(File file) throws IOException, NoSuchAlgorithmException {
+	public FileToCkunk(File file, String type) throws IOException, NoSuchAlgorithmException {
 		
 		int partCounter = 1;	
 		int sizeOfFiles = 64000;
@@ -35,13 +35,13 @@ public class FileToCkunk {
 
 		try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
 
-			String name = file.getName();
+			
 			int tmp = 0;
 
 			while ((tmp = file_data.read(buffer)) > 0) {
 				//write each chunk of data into separate file with different number in name
 
-				File newChunk = new File("./Files", fileID + String.format("%03d", partCounter++));
+				File newChunk = new File("./Chunks", fileID + String.format("%03d", partCounter++) + type);
 				
 				try (FileOutputStream out = new FileOutputStream(newChunk)) {
 					out.write(buffer, 0, tmp); //tmp is chunk size
