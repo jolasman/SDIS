@@ -11,12 +11,7 @@ public class Chunk {
 		//chunkID = fileID + chunkN
 		
 		this.replication_degree = replication_degree;
-		
-		
-		
-		
-		
-		
+				
 		
 	}
 
