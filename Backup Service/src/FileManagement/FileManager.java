@@ -10,6 +10,7 @@ import FileManagement.MergeChunks;
 public class FileManager {
 	public String path = "./Files";
 
+	@SuppressWarnings("unused")
 	public FileManager() throws NoSuchAlgorithmException, IOException {
 		File file = new File(path);
 		File afile[] = file.listFiles();

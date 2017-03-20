@@ -1,26 +1,26 @@
 package Interface;
-import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import FileManagement.FileToCkunk;
-import FileManagement.MergeChunks;
+//import FileManagement.FileToCkunk;
+//import FileManagement.MergeChunks;
 import FileManagement.FileManager;
 
 public class Interface {
 
 	
 	
+	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		/*	if (args.length != 3) {
 			System.out.println("Usage: java Server <srvc_port> <mcast_addr> <mcast_port>");
 			return;
 		}
 		 */
-
+		
 		Scanner in = new Scanner(System.in);
 		// print menu
 
