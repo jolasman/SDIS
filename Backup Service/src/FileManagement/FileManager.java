@@ -18,7 +18,7 @@ public class FileManager {
 	public FileManager() throws NoSuchAlgorithmException, IOException {
 		File file = new File(path);
 		File afile[] = file.listFiles();
-
+//TODO se nao houver ficheiros dar erro
 		int i = 0;
 		for (int j = afile.length; i < j; i++) {
 			File arquivos = afile[i];

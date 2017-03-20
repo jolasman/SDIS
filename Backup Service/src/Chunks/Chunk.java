@@ -34,7 +34,7 @@ public class Chunk {
 		this.chunkNo = chunkNo;
 		this.path = path;
 		
-		  File newChunk = new File(path, fileID.substring(0,10) + String.format("%03d", chunkNo) + type);
+		  File newChunk = new File(path, fileID + String.format("%03d", chunkNo) + type);
 
 			try (FileOutputStream out = new FileOutputStream(newChunk)) {
 				out.write(fileData, 0, MAX_BYTES); 

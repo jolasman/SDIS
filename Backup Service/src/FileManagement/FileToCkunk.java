@@ -5,11 +5,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-
 import chunks.Chunk;
+import message.*;;
 /*
  * class que divide um determinado ficheiro em chunks de 64000 bytes
  */
@@ -20,15 +20,26 @@ public class FileToCkunk {
 
 	@SuppressWarnings("unused")
 	public FileToCkunk(File file, String type) throws IOException, NoSuchAlgorithmException {
+		
+		MakeChunks(file, type);
+	}
+	
+	public void MakeChunks(File file,String type) throws IOException{
 		int partCounter = 1;	
 		byte[] buffer = new byte[sizeOfFiles];
 
 		//sha256 algorithm ****************************************
-		MessageDigest md = MessageDigest.getInstance( "SHA-512" );
-		md.update( file.getName().getBytes("UTF-8"));
-		byte[] aMessageDigest = md.digest();
+		String stringToHash = file.getName() + file.lastModified();
+		MessageDigest digest = null;
+		  try {
+		   digest = MessageDigest.getInstance("SHA-256");
+		  } catch (NoSuchAlgorithmException e) {
+		   e.printStackTrace();
+		  }
 
-		fileID = Base64.getEncoder().encodeToString( aMessageDigest );
+		  byte[] hashedBytes = digest.digest(stringToHash.getBytes(StandardCharsets.UTF_8));
+		  String fileID = String.format("%064x", new java.math.BigInteger(1,hashedBytes));
+		  
 		//end *************************************************************
 
 		try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
@@ -44,6 +55,9 @@ public class FileToCkunk {
 				System.out.println("ChunkObject Replication Degree : " + newChunkObject.getReplication_degree());
 				System.out.println("ChunkObject FileData : " + newChunkObject.getChunkData());
 				//System.out.println("ChunkObject FileDataString : " + newChunkObject.getChunkDataString());
+				char[] version = {'1','.','0'};
+				CreateMessage msg = new CreateMessage("PutChunk", version, fileID, partCounter, replication_degree);
+				
 				partCounter++;
 
 			}

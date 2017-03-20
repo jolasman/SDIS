@@ -1,5 +1,9 @@
 package peer;
-
+/**
+ * esta class vai iniciar to o processo 
+ * @author Joel Carneiro
+ *
+ */
 public class Peer {
 	
 	private int peerID;
