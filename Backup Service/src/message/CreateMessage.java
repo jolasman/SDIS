@@ -1,5 +1,7 @@
 package message;
 
+import message.*;
+
 public class CreateMessage {
 	private String typeMessage;
 	private char[] version;
@@ -20,8 +22,9 @@ public class CreateMessage {
 	}
 	
 	public String MessageToSend(){
-		String message = typeMessage + " " + version[0]+version[1]+version[2] + " " + fileID + " " + 
+		String message = typeMessage + " " + version[0]+version[1]+version[2] + " " + "192.3.2.3" + " "+ fileID + " " + 
 	chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
+	
 		
 		return message;
 
