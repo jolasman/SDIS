@@ -4,11 +4,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import fileManagement.FileManager;
+import message.CreateMessage;
+import message.MessageManager;
+import peer.Peer;
 
 public class Interface {
-
-
-
 	@SuppressWarnings({ "resource", "unused" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		/*	if (args.length != 3) {
@@ -34,13 +34,11 @@ public class Interface {
 			menuItem = in.nextInt();
 			switch (menuItem) {
 			case 1:
-
-				FileManager files = new FileManager();
-
-				/*File file_initiator = new File("./Files/comprovativo.pdf");
-				FileToCkunk initial_file = new FileToCkunk(file_initiator,"pdf");
-				MergeChunks merged_file = new MergeChunks(initial_file.getChunks(),new File("./Files/file_merged.pdf"));
-				 */
+				System.out.print("\nChoose peerID(int): ");// verificar se e' unico em todos os peers
+				int peerID = in.nextInt();
+				
+				//FileManager files = new FileManager();
+				Peer newPeer = new Peer(peerID);
 
 				quit = true;
 				// do something...

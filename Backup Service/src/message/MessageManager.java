@@ -6,11 +6,11 @@ package message;
  *
  */
 public class MessageManager {
-/**
- * 
- * @param msg byte[] com a mesnagem recebida no socket
- * @return objecto SeparatedMessage(com o header e o body ja separados)
- */
+	/**
+	 * 
+	 * @param msg byte[] com a mesnagem recebida no socket
+	 * @return objecto SeparatedMessage(com o header e o body ja separados)
+	 */
 	public static synchronized SeparatedMessage SeparateMsgContent(byte[] msg){
 
 		byte[] original = msg;
@@ -31,10 +31,16 @@ public class MessageManager {
 			}
 			else{}
 		}
-		System.arraycopy(original, index_body_begin, body, 0, original.length - index_body_begin);
 		String header = new String (header_byte);
-
-		SeparatedMessage msgSeparated = new SeparatedMessage(header, body);		
-		return msgSeparated;
+		
+		if(original.length == index_body_begin){ // sem body --> Stored
+			SeparatedMessage msgSeparated = new SeparatedMessage(header);
+			return msgSeparated;
+		}else{
+			System.arraycopy(original, index_body_begin, body, 0, original.length - index_body_begin);
+			SeparatedMessage msgSeparated = new SeparatedMessage(header, body);	
+			return msgSeparated;
+		}
+		
 	}
 }

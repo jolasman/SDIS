@@ -5,9 +5,9 @@ public class CreateMessage {
 	 * constroi a mensagem a enviar com os parametros passados no construtor createMessage (putchunk)
 	 * @return String message a enviar
 	 */
-	public static  synchronized String MessageToSendPut(String typeMessage, char[] version, int senderID, String fileID, int chunkNo, int replication_degree){
+	public static  synchronized String MessageToSendPut(String typeMessage, char[] version, int senderID, String fileID, int chunkNo, int replication_degree,byte[] body){
 		String message = typeMessage + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + 
-	chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
+	chunkNo + " " + replication_degree +" " + "\r\n\r\n" + body; 
 		return message;
 	}
 	/**

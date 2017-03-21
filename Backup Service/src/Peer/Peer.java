@@ -33,6 +33,8 @@ public class Peer  {
 
 	public Peer(int peerID){
 		this.peerID = peerID;
+		//McDataChannel();
+		//McChannel();
 		//McChannel();
 	}
 
@@ -42,7 +44,7 @@ public class Peer  {
 	}
 
 	@SuppressWarnings("unused")
-	public void  McChannel() throws IOException{
+	public void  McDataChannel() throws IOException{
 		int PORT = 7777;
 		mcSocket = new MulticastSocket(PORT);
 		InetAddress mcastAddr = InetAddress.getByName("224.0.0.3");
@@ -78,7 +80,7 @@ public class Peer  {
 
 							if(type_msg.equals("PUTCHUNK")){
 								Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
-								String message_to_Send = CreateMessage.MessageToSendPut("Stored",version,senderID_msg , fileID_msg, chunkNo_msg,repl_degree_msg);
+								String message_to_Send = CreateMessage.MessageToSendStore("Stored",version,senderID_msg , fileID_msg, chunkNo_msg);
 								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , packet.getAddress(), packet.getPort());
 								try {
 									udp_msg_McSocket.send(msgDatagram_to_send);
@@ -87,7 +89,7 @@ public class Peer  {
 									e.printStackTrace();
 								}
 							}
-
+							else{}
 						};
 
 					};
@@ -96,4 +98,56 @@ public class Peer  {
 
 		};
 	}
+	
+	
+	
+	public void McChannel() throws IOException{
+		int PORT = 6666;
+		mcSocket = new MulticastSocket(PORT);
+		InetAddress mcastAddr = InetAddress.getByName("224.0.0.6");
+		int mcastPORT = 8888;
+		InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
+		mcSocket.joinGroup(mcastAddr);
+
+		udp_msg_McSocket = new DatagramSocket(PORT,hostAddr_McSocket);
+
+		new Thread(){
+			public void run(){
+				while(true){
+					byte[] buffer = new byte[65000];
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+					try {
+						udp_msg_McSocket.receive(packet);
+					} 
+					catch (IOException e) {
+						System.out.println("\nError when receiving in udp_receive_McSocket!\n");
+						e.printStackTrace();
+					}
+					new Thread(){
+						public void run(){
+							byte[] msg_received = packet.getData();	//msg recebida
+
+							String fileID_msg = MessageManager.SeparateMsgContent(msg_received).getFileID();
+							int chunkNo_msg = MessageManager.SeparateMsgContent(msg_received).getChunkNo();
+							String type_msg = MessageManager.SeparateMsgContent(msg_received).getType();
+							char[] version = MessageManager.SeparateMsgContent(msg_received).getVersion();
+							int senderID_msg = MessageManager.SeparateMsgContent(msg_received).getSenderID();
+
+							if(type_msg.equals("Stored")){
+								//guardar dados
+							}
+							else{}
+						};
+
+					};
+				}
+			};
+
+		};
+		
+	}
+	
+public void McDataRecovery(){
+		
+	}	
 }
