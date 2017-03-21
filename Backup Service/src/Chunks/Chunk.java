@@ -7,7 +7,6 @@ import java.io.IOException;
 import message.MessageManager;
 
 public class Chunk {
-
 	private String chunkID = "";
 	private int replication_degree;
 	private static int MAX_BYTES = 64000;
@@ -20,47 +19,45 @@ public class Chunk {
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree) { 
 
 		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
-
 		this.chunkData = fileData;
 		this.replication_degree = replication_degree;
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
-
 	}
-	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree, String path, String type){
+	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree, String path){
 		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
-
 		this.chunkData = fileData;
 		this.replication_degree = replication_degree;
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
 		this.path = path;
-		
-		  File newChunk = new File(path, fileID + String.format("%03d", chunkNo) + type);
 
-			try (FileOutputStream out = new FileOutputStream(newChunk)) {
-				out.write(fileData, 0, MAX_BYTES); 
-				System.out.println("Chunk " + newChunk + " created");
-				//System.out.println("Chunk buffer data " + buffer);
-				//System.out.println("Chunk tmp " + tmp);
-				
-			}
-			catch (IOException e) {
-				System.out.println("Error when we try to write into a new Chunk");
-				e.printStackTrace();
-			}
-			String message = "putchunk" + " " + "1" + "." + "0" + " " + "sender123445" + " " + fileID + " " + 
-					chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
-						
-						/*byte[] msg = message.getBytes();
+		File directory = new File(String.valueOf(path));
+		if(! directory.exists()){
+			directory.mkdir();
+		}
+		File newChunk = new File(path, fileID + String.format("%03d", chunkNo));
+
+		try (FileOutputStream out = new FileOutputStream(newChunk)) {
+			out.write(fileData, 0, MAX_BYTES); 
+			System.out.println("Chunk " + newChunk + " created");
+		}
+		catch (IOException e) {
+			System.out.println("Error when we try to write into a new Chunk");
+			e.printStackTrace();
+		}
+		/*String message = "putchunk" + " " + "1" + "." + "0" + " " + "sender123445" + " " + fileID + " " + 
+				chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
+*/
+		/*byte[] msg = message.getBytes();
 						byte[] body = fileData;
 						byte[] mess = new byte[msg.length + body.length];
-						
+
 						System.arraycopy(msg, 0, mess,0, msg.length);
 						System.arraycopy(body, 0, mess, msg.length, body.length);
-						*/
-						//MessageManager.SeparateMsgContent(mess);
-						/*System.out.println("header get: " + MessageManager.SeparateMsgContent(mess).getHeader());
+		 */
+		//MessageManager.SeparateMsgContent(mess);
+		/*System.out.println("header get: " + MessageManager.SeparateMsgContent(mess).getHeader());
 						System.out.println("fileID get: " + MessageManager.SeparateMsgContent(mess).getFileID());
 						System.out.println("chunkNo get: " + MessageManager.SeparateMsgContent(mess).getChunkNo());
 						System.out.println("senderID get: " + MessageManager.SeparateMsgContent(mess).getSenderID());
@@ -68,9 +65,9 @@ public class Chunk {
 						System.out.println("replication get: " + MessageManager.SeparateMsgContent(mess).getReplication_degree());
 						String version = String.valueOf(MessageManager.SeparateMsgContent(mess).getVersion());
 						System.out.println("type get: " + version);
-						*/
-						
-		
+		 */
+
+
 	}
 
 	public String getPath() {

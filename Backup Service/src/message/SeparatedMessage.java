@@ -1,16 +1,23 @@
 package message;
-
+/**
+ * recebe o header e o body da menssage e subdivide o header em todos os campos que ele tem
+ * @author Joel Carneiro
+ *
+ */
 public class SeparatedMessage {
-
 	private String type;
 	private String header;
 	private byte[] body;
 	private char[] version = new char[3];
-	private String senderID;
+	private int senderID;
 	private String fileID;
 	private int chunkNo;
 	private int replication_degree;
-
+/**
+ * 
+ * @param header byte[] com o header data
+ * @param body byte[] com o body data
+ */
 	public SeparatedMessage(String header, byte[] body){
 		String header_trimed = header.trim();
 		String[] final_Header = header_trimed.split(" ");
@@ -22,17 +29,16 @@ public class SeparatedMessage {
 		version[0] = final_Header[1].charAt(0);
 		version[1] = final_Header[1].charAt(1);
 		version[2] = final_Header[1].charAt(2);
-		senderID = final_Header[2];
+		senderID = Integer.parseInt(final_Header[2]);
 		fileID = final_Header[3];
 		chunkNo = Integer.parseInt(final_Header[4]);
 		
 		if(final_Header.length == 6){
 			replication_degree = Integer.parseInt(final_Header[5]);
 		}
-
-
-
 	}
+	
+	
 	public byte[] getBody() {
 		return body;
 	}
@@ -51,10 +57,10 @@ public class SeparatedMessage {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public String getSenderID() {
+	public int getSenderID() {
 		return senderID;
 	}
-	public void setSenderID(String senderID) {
+	public void setSenderID(int senderID) {
 		this.senderID = senderID;
 	}
 	public String getFileID() {

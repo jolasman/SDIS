@@ -1,7 +1,16 @@
 package message;
-
+/**
+ * esta class trata as mensagens recebidas no socket
+ * recebe um array de bytes (byte[]) com todos os dados da mesnagem e separa o header do body
+ * @author Joel Carneiro
+ *
+ */
 public class MessageManager {
-
+/**
+ * 
+ * @param msg byte[] com a mesnagem recebida no socket
+ * @return objecto SeparatedMessage(com o header e o body ja separados)
+ */
 	public static synchronized SeparatedMessage SeparateMsgContent(byte[] msg){
 
 		byte[] original = msg;
@@ -28,8 +37,4 @@ public class MessageManager {
 		SeparatedMessage msgSeparated = new SeparatedMessage(header, body);		
 		return msgSeparated;
 	}
-
-
-
-
 }

@@ -48,15 +48,16 @@ public class FileToCkunk {
 			while ((tmp = file_data.read(buffer)) > 0) { //create each chunk while file have some bytes with data
 
 				//Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree);
-				Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree, "./Chunks", type);
-				System.out.println("\n\nChunkObject ID : " + newChunkObject.getChunkID());
+				Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree, "./Chunks");
+				/*System.out.println("\n\nChunkObject ID : " + newChunkObject.getChunkID());
 				System.out.println("ChunkObject No : " + newChunkObject.getChunkNo());
 				System.out.println("ChunkObject FileID : " + newChunkObject.getFileID());
 				System.out.println("ChunkObject Replication Degree : " + newChunkObject.getReplication_degree());
 				System.out.println("ChunkObject FileData : " + newChunkObject.getChunkData());
+				*/
 				//System.out.println("ChunkObject FileDataString : " + newChunkObject.getChunkDataString());
-				char[] version = {'1','.','0'};
-				CreateMessage msg = new CreateMessage("PutChunk", version, fileID, partCounter, replication_degree);
+				//char[] version = {'1','.','0'};
+				//CreateMessage msg = new CreateMessage("PutChunk", version,"senderID ", fileID, partCounter, replication_degree);
 				
 				partCounter++;
 

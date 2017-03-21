@@ -1,32 +1,22 @@
 package message;
 
-import message.*;
-
 public class CreateMessage {
-	private String typeMessage;
-	private char[] version;
-	private String fileID;
-	private int chunkNo;
-	private int replication_degree;
-
-	public CreateMessage(String typeMessage, char[] version, String fileID, int chunkNo, int replication_degree){
-
-		this.typeMessage = typeMessage;
-		this.version = version;
-		this.fileID = fileID;
-		this.chunkNo = chunkNo;
-		this.replication_degree = replication_degree;
-
-		MessageToSend();
-		System.out.println("Message to send : " + MessageToSend());
-	}
-	
-	public String MessageToSend(){
-		String message = typeMessage + " " + version[0]+version[1]+version[2] + " " + "192.3.2.3" + " "+ fileID + " " + 
+	/**
+	 * constroi a mensagem a enviar com os parametros passados no construtor createMessage (putchunk)
+	 * @return String message a enviar
+	 */
+	public static  synchronized String MessageToSendPut(String typeMessage, char[] version, int senderID, String fileID, int chunkNo, int replication_degree){
+		String message = typeMessage + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + 
 	chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
-	
-		
 		return message;
-
+	}
+	/**
+	 * constroi msg a enviar com os parametros passados no construtor Create Message (Stored)
+	 * @return String menssagem a enviar
+	 */
+	public static synchronized String MessageToSendStore(String typeMessage, char[] version, int senderID, String fileID, int chunkNo){
+		String message = typeMessage + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + 
+	chunkNo + " " + "\r\n\r\n"; 
+		return message;
 	}
 }
