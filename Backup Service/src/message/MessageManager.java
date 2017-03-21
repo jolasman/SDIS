@@ -33,7 +33,7 @@ public class MessageManager {
 		}
 		String header = new String (header_byte);
 		
-		if(original.length == index_body_begin){ // sem body --> Stored
+		if(original.length == header_byte.length){ // sem body --> Stored
 			SeparatedMessage msgSeparated = new SeparatedMessage(header);
 			return msgSeparated;
 		}else{

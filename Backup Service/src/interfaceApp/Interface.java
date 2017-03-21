@@ -40,7 +40,7 @@ public class Interface {
 				//FileManager files = new FileManager();
 				Peer newPeer = new Peer(peerID);
 
-				quit = true;
+				
 				// do something...
 				break;
 			case 2:
