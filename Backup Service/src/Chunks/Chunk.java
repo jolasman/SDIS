@@ -3,6 +3,7 @@ package chunks;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import message.MessageManager;
 
@@ -15,6 +16,7 @@ public class Chunk {
 	private int chunkNo;
 	private String path;
 	private String type;
+	private static ArrayList<Chunk> ChunksCreated = new ArrayList<Chunk>();
 
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree) { 
 
@@ -24,6 +26,7 @@ public class Chunk {
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
 	}
+	
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree, String path){
 		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
@@ -46,6 +49,14 @@ public class Chunk {
 			System.out.println("Error when we try to write into a new Chunk");
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public static ArrayList<Chunk> getChunksCreated() {
+		return ChunksCreated;
+	}
+	public void setChunksCreated(Chunk chunk) {
+		ChunksCreated.add(chunk);
 	}
 
 	public String getPath() {

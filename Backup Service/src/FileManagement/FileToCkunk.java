@@ -49,8 +49,10 @@ public class FileToCkunk {
 
 				//Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree);
 				Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree, "./Chunks");
+				newChunkObject.setChunksCreated(newChunkObject);
 				partCounter++;
 			}
+			
 		} 
 		catch (FileNotFoundException e) {
 			System.out.println("Error when we try to get file data");

@@ -10,67 +10,54 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import chunks.Chunk;
+import database.DatabaseChunksStored;
 import message.*;
 
 /**
  * esta class vai iniciar to o processo 
- * os sockets devm ser volatile
- * criar uma thread por cada menssagem recebida
- * criar uma thread a espera 
  * @author Joel Carneiro
  *
  */
 public class Peer  {
 	private volatile MulticastSocket mcSocket;
 	private volatile DatagramSocket udp_msg_McSocket;
-	private String local_path = "./Chunks";
+	private String local_path = "./ChunksReceived";
 	private int peerID;
+	private int PORT_MC_Channel = 5001;
+	private InetAddress mcastAddr_Channels = InetAddress.getByName("225.4.5.6");
+	private int mcastPORT_MC_Channel = 8888;
 	//como dar um peerID unico a cada um do sistema?
 	public Peer(int peerID) throws IOException{
 		this.peerID = peerID;
 		McDataChannel();
 		McChannel();
-		testApp();
+		//testApp();
 		//McChannel();
 	}
 	@SuppressWarnings("unused")
 	public void  McDataChannel() throws IOException{
-		int PORT = 5555;
+		int PORT = 5000;
 		mcSocket = new MulticastSocket(PORT);
-		InetAddress mcastAddr = InetAddress.getByName("224.0.0.3");
+		InetAddress mcastAddr = mcastAddr_Channels;
 		int mcastPORT = 4444;
-		InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
+		InetAddress hostAddr_MD_Channel = InetAddress.getLocalHost();
 		mcSocket.joinGroup(mcastAddr);
 
-		udp_msg_McSocket = new DatagramSocket(PORT,hostAddr_McSocket);
+		udp_msg_McSocket = new DatagramSocket(PORT,hostAddr_MD_Channel);
 
 		Thread md = new Thread(){
 			public void run(){
 				System.out.println("entrou 1 thread md");
 				while(true){
-					byte[] buffer = new byte[65000];
+					byte[] buffer = new byte[85000];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-					// enviar mensagem stored exemplo
-					/*	char[] version = {'1','.','1'};
-					String message_to_Send = CreateMessage.MessageToSendStore("Stored",version,12345, "fileID_msg",1235);
-					DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , hostAddr_McSocket, 6666);
 					try {
-						udp_msg_McSocket.send(msgDatagram_to_send);
-					} catch (IOException e) {
-						System.out.println("\nError when trying to send de Stored message to: " + packet.getAddress() + " --- " + packet.getPort());
-						e.printStackTrace();
-					}
-					 */
-					//end
-
-					try {
-						udp_msg_McSocket.receive(packet);
-
+						mcSocket.receive(packet);
 						Thread md_msg = new Thread(){
 							public void run(){
 								System.out.println("entrou 2 thread md");
-								System.out.println("md address " + hostAddr_McSocket);
+								System.out.println("\nlocal host address " + hostAddr_MD_Channel);
+								System.out.println("\nreceived from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 
 								byte[] msg_received = packet.getData();	//msg recebida
 
@@ -82,18 +69,22 @@ public class Peer  {
 								char[] version = MessageManager.SeparateMsgContent(msg_received).getVersion();
 								int senderID_msg = MessageManager.SeparateMsgContent(msg_received).getSenderID();
 
-								if(type_msg.equals("PUTCHUNK")){
+								if(type_msg.equals("PUTCHUNK")){					
+
 									Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
 									String message_to_Send = CreateMessage.MessageToSendStore("Stored",version,senderID_msg , fileID_msg, chunkNo_msg);
-									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , packet.getAddress(), packet.getPort());
+									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr_Channels, PORT_MC_Channel);
 									try {
 										udp_msg_McSocket.send(msgDatagram_to_send);
+										System.out.println("mandou mensagem para: " + mcastAddr_Channels + " ----- " + PORT_MC_Channel);
 									} catch (IOException e) {
-										System.out.println("\nError when trying to send de Stored message to: " + packet.getAddress() + " --- " + packet.getPort());
+										System.out.println("\nError when trying to send de Stored message to: " + mcastAddr_Channels + " --- " + mcastAddr_Channels);
 										e.printStackTrace();
 									}
 								}
-								else{}
+								else{
+									System.out.println("só sao aceites msg do tipo PUTCHUNK");
+								}
 							};
 
 						};
@@ -109,41 +100,43 @@ public class Peer  {
 		};
 		md.start();
 	}	
-	public void McChannel() throws IOException{
-		int PORT = 6666;
-		mcSocket = new MulticastSocket(PORT);
-		InetAddress mcastAddr = InetAddress.getByName("224.0.0.6");
-		int mcastPORT = 8888;
-		InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
-		mcSocket.joinGroup(mcastAddr);
 
-		udp_msg_McSocket = new DatagramSocket(PORT,hostAddr_McSocket);
+	public void McChannel() throws IOException{
+
+		MulticastSocket mcSocket_MC_Channel = new MulticastSocket(PORT_MC_Channel);
+		InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
+		mcSocket_MC_Channel.joinGroup(mcastAddr_Channels);
+		DatagramSocket udp_msg_Mc = new DatagramSocket(PORT_MC_Channel,hostAddr_McSocket);
 
 		Thread mc = new Thread(){
 			public void run(){
 				System.out.println("entrou 1 thread mc");
 				System.out.println("mc addres: " + hostAddr_McSocket);
 				while(true){
-					byte[] buffer = new byte[65000];
+					byte[] buffer = new byte[85000];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
-						udp_msg_McSocket.receive(packet);
-
+						mcSocket_MC_Channel.receive(packet);
+						System.out.println("tentou receber packet MC Channel" );
 						Thread mc_msg = new Thread(){
 							public void run(){
 								System.out.println("entrou 2 thread mc");
 								byte[] msg_received = packet.getData();	//msg recebida
 
-								String fileID_msg = MessageManager.SeparateMsgContent(msg_received).getFileID();
-								int chunkNo_msg = MessageManager.SeparateMsgContent(msg_received).getChunkNo();
-								String type_msg = MessageManager.SeparateMsgContent(msg_received).getType();
-								char[] version = MessageManager.SeparateMsgContent(msg_received).getVersion();
-								int senderID_msg = MessageManager.SeparateMsgContent(msg_received).getSenderID();
+								String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
+								int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
+								String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
+								char[] version = MessageManager.SeparateMsgContentStored(msg_received).getVersion();
+								int senderID_msg = MessageManager.SeparateMsgContentStored(msg_received).getSenderID();
 
-								if(type_msg.equals("Stored")){
-									//guardar dados
+
+								if(type_msg.equals("STORED")){
+									DatabaseChunksStored.StoreChunkID(fileID_msg + chunkNo_msg, senderID_msg);
+									System.out.println("\ngravou na BD após receber STORED msg\n");
 								}
-								else{}
+								else{
+									System.out.println("\nERROR: Mensagem recebida diferente de STORED syntax no MC Channel\n");
+								}
 							};
 
 						};
@@ -197,7 +190,7 @@ public class Peer  {
 									String fileName = message[2];
 									int replicationDegree = Integer.parseInt(message[3]);
 									System.out.println("mensagem recebida de testApp com: "+
-									peerID + " - " + fileName + " - " + replicationDegree);
+											peerID + " - " + fileName + " - " + replicationDegree);
 
 								}else {
 									System.out.println("mensagem recebida de testApp com erro de syntax");

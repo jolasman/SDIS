@@ -32,15 +32,36 @@ public class MessageManager {
 			else{}
 		}
 		String header = new String (header_byte);
-		
-		if(original.length == header_byte.length){ // sem body --> Stored
-			SeparatedMessage msgSeparated = new SeparatedMessage(header);
-			return msgSeparated;
-		}else{
-			System.arraycopy(original, index_body_begin, body, 0, original.length - index_body_begin);
-			SeparatedMessage msgSeparated = new SeparatedMessage(header, body);	
-			return msgSeparated;
-		}
-		
+
+		System.arraycopy(original, index_body_begin, body, 0, original.length - index_body_begin);
+		SeparatedMessage msgSeparated = new SeparatedMessage(header, body);	
+		return msgSeparated;
 	}
+
+	public static synchronized SeparatedMessage SeparateMsgContentStored(byte[] msg){
+
+		byte[] original = msg;
+		byte[] header_byte = new byte[original.length];
+		byte[] body = new byte[original.length];
+		int index_body_begin = 0;
+
+		for (int i = 0; i < original.length; i++){
+			if (original[i] == (byte) '\r'){
+				if (i + 1 < original.length && original[i+1] == (byte) '\n' &&
+						i + 2 < original.length && original[i+2] == (byte) '\r' &&
+						i + 3 < original.length && original[i+3] == (byte) '\n'){
+				
+					System.arraycopy(original, 0, header_byte,0, i-1);					
+					break;
+				}
+			}
+			else{}
+		}
+		String stored = new String (header_byte);
+
+		System.arraycopy(original, index_body_begin, body, 0, original.length - index_body_begin);
+		SeparatedMessage msgSeparated = new SeparatedMessage(stored);	
+		return msgSeparated;
+	}
+
 }
