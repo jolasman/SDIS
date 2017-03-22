@@ -44,9 +44,11 @@ public class Iniciator {
 			database.DatabasePeerID.StorePeerID(peerID);
 			FileManager files = new FileManager();
 			if(files.isHaveFiles()){
-				int PORT = 5000;			
+				int PORT = 4444;			
 				InetAddress mcastAddr = InetAddress.getByName("225.4.5.6");
-				DatagramSocket socket = new DatagramSocket(4000);
+				MulticastSocket socket = new MulticastSocket(PORT);
+				socket.joinGroup(mcastAddr);
+				socket.setTimeToLive(1);
 				
 				for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
 					char[] version = {'1','.','1'};

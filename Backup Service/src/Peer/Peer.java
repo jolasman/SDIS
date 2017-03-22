@@ -37,12 +37,14 @@ public class Peer  {
 	@SuppressWarnings("unused")
 	public void  McDataChannel() throws IOException{
 		int PORT = 5000;
-		mcSocket = new MulticastSocket(PORT);
-		InetAddress mcastAddr = mcastAddr_Channels;
 		int mcastPORT = 4444;
+		mcSocket = new MulticastSocket(mcastPORT);
+		InetAddress mcastAddr = mcastAddr_Channels;
+		
 		InetAddress hostAddr_MD_Channel = InetAddress.getLocalHost();
 		mcSocket.joinGroup(mcastAddr);
 
+		MulticastSocket mcSocket_to_MC_Channel = new MulticastSocket(mcastPORT_MC_Channel);
 		udp_msg_McSocket = new DatagramSocket(PORT,hostAddr_MD_Channel);
 
 		Thread md = new Thread(){
@@ -74,8 +76,9 @@ public class Peer  {
 									Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
 									String message_to_Send = CreateMessage.MessageToSendStore("Stored",version,senderID_msg , fileID_msg, chunkNo_msg);
 									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr_Channels, PORT_MC_Channel);
+									
 									try {
-										udp_msg_McSocket.send(msgDatagram_to_send);
+										mcSocket_to_MC_Channel.send(msgDatagram_to_send);
 										System.out.println("mandou mensagem para: " + mcastAddr_Channels + " ----- " + PORT_MC_Channel);
 									} catch (IOException e) {
 										System.out.println("\nError when trying to send de Stored message to: " + mcastAddr_Channels + " --- " + mcastAddr_Channels);
