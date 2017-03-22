@@ -30,11 +30,12 @@ public class Peer  {
 		this.peerID = peerID;
 		McDataChannel();
 		McChannel();
+		testApp();
 		//McChannel();
 	}
 	@SuppressWarnings("unused")
 	public void  McDataChannel() throws IOException{
-		int PORT = 7777;
+		int PORT = 5555;
 		mcSocket = new MulticastSocket(PORT);
 		InetAddress mcastAddr = InetAddress.getByName("224.0.0.3");
 		int mcastPORT = 4444;
@@ -49,9 +50,9 @@ public class Peer  {
 				while(true){
 					byte[] buffer = new byte[65000];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				
+
 					// enviar mensagem stored exemplo
-				/*	char[] version = {'1','.','1'};
+					/*	char[] version = {'1','.','1'};
 					String message_to_Send = CreateMessage.MessageToSendStore("Stored",version,12345, "fileID_msg",1235);
 					DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , hostAddr_McSocket, 6666);
 					try {
@@ -60,12 +61,12 @@ public class Peer  {
 						System.out.println("\nError when trying to send de Stored message to: " + packet.getAddress() + " --- " + packet.getPort());
 						e.printStackTrace();
 					}
-					*/
+					 */
 					//end
-					
+
 					try {
 						udp_msg_McSocket.receive(packet);
-						
+
 						Thread md_msg = new Thread(){
 							public void run(){
 								System.out.println("entrou 2 thread md");
@@ -162,6 +163,60 @@ public class Peer  {
 	public void McDataRecovery(){
 
 	}	
+	/**
+	 * trata das mensagem enviadas pela testApp class
+	 * @throws IOException
+	 */
+	public void testApp() throws IOException{
+		int PORT = 7777;
+		InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
+		DatagramSocket udp_testApp = new DatagramSocket(PORT, hostAddr_McSocket);
+
+		Thread mc = new Thread(){
+			public void run(){
+				System.out.println("entrou 1 thread testApp");
+				System.out.println("address: " + hostAddr_McSocket);
+				while(true){
+					byte[] buffer = new byte[65000];
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+					try {
+						udp_testApp.receive(packet);
+
+						Thread mc_msg = new Thread(){
+							public void run(){
+								System.out.println("entrou 2 thread testApp");
+								byte[] msg_received = packet.getData();	//msg recebida
+								String s = new String(msg_received, 0, packet.getLength());
+								String messageReceived = s.trim();
+								String message[] = messageReceived.split(" ");
+								System.out.println("mensagem recebida testApp: " + s);
+
+
+								if(message[1].equals("BACKUP")){
+									int peerID = Integer.parseInt(message[0]);
+									String fileName = message[2];
+									int replicationDegree = Integer.parseInt(message[3]);
+									System.out.println("mensagem recebida de testApp com: "+
+									peerID + " - " + fileName + " - " + replicationDegree);
+
+								}else {
+									System.out.println("mensagem recebida de testApp com erro de syntax");
+								}
+							};
+
+						};
+						mc_msg.start();
+					} 
+					catch (IOException e) {
+						System.out.println("\nError when receiving in udp_receive_McSocket!\n");
+						e.printStackTrace();
+					}
+				}
+			};
+		};
+		mc.start();
+	}
+
 	public int getPeerID() {
 		return peerID;
 	}

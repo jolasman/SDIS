@@ -1,22 +1,19 @@
-package interfaceApp;
+package initiator;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import fileManagement.FileManager;
-import message.CreateMessage;
-import message.MessageManager;
 import peer.Peer;
 
-public class Interface {
-	@SuppressWarnings({ "resource", "unused" })
+public class Iniciator {
+	@SuppressWarnings({ "unused" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		/*	if (args.length != 3) {
-			System.out.println("Usage: java Server <srvc_port> <mcast_addr> <mcast_port>");
-			return;
-		}
-		 */
-
+		System.out.println("Usage: java Server <srvc_port> <mcast_addr> <mcast_port>");
+		return;
+	}
+	 */
 		Scanner in = new Scanner(System.in);
 		// print menu
 
@@ -29,7 +26,7 @@ public class Interface {
 		// handle user commands
 		boolean quit = false;
 		int menuItem;
-		do {
+		
 			System.out.print("\nChoose menu item: ");
 			menuItem = in.nextInt();
 			switch (menuItem) {
@@ -64,11 +61,7 @@ public class Interface {
 				break;
 			default:
 				System.out.println("Invalid choice.");
-			}
-		} while (!quit);
-		System.out.println("Bye-bye!");
-
-
-
+			
+		}
 	}
 }
