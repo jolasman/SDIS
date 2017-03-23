@@ -1,8 +1,8 @@
-/peer/
-/message/
-/tests/
-/interfaceApp/
-/initiator/
-/database/
-/fileManagement/
 /chunks/
+/database/
+/disk/
+/fileManagement/
+/initiator/
+/message/
+/peer/
+/tests/

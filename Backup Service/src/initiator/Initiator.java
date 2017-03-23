@@ -47,7 +47,7 @@ public class Initiator {
 			
 			File file = new File("./ChunksReceived");
 
-			if(file.listFiles().length == 0){ System.out.println("nenhum ficheiro na pasta");
+			if(file.listFiles() == null){ System.out.println("nenhum ficheiro na pasta");
 			}else{
 				File afile[] = file.listFiles();
 				int i = 0;
