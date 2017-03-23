@@ -5,8 +5,13 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import chunks.Chunk;
+import database.DatabaseChunksReceived;
 import database.DatabaseChunksStored;
 import initiator.Initiator;
 import message.*;
@@ -62,24 +67,45 @@ public class Peer  {
 								String type_msg = MessageManager.SeparateMsgContent(msg_received).getType();
 								char[] version = MessageManager.SeparateMsgContent(msg_received).getVersion();
 								int senderID_msg = MessageManager.SeparateMsgContent(msg_received).getSenderID();
-
-								if(type_msg.equals("PUTCHUNK")){					
-									Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
-									String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
-									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
-									try {
-										Thread.sleep((long)(Math.random() * 400));
-									} catch (InterruptedException e1) {
-										System.out.println("\nMcData Channel Thread can not sleep");
-										e1.printStackTrace();
+								boolean stored = false;
+								boolean received = false;
+								String chunkIDtoCheck = fileID_msg+chunkNo_msg;
+								if(type_msg.equals("PUTCHUNK")){
+									ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+									ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+									for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+										if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
+											stored = true;
+											System.out.println("\nPeer will not store chunk. It's a chunk sent by him\n");
+										}
 									}
-									try {
-										
-										mcSocket_to_MC_Channel.send(msgDatagram_to_send);
-										System.out.println("\nMcData Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
-									} catch (IOException e) {
-										System.out.println("\nError: McData Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
-										e.printStackTrace();
+
+									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+										if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
+											received = true;
+											System.out.println("\nPeer already have that chunk. Not Stored.\n");
+										}
+									}
+									if(!received){
+										if(!stored){
+											Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
+											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
+											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
+											try {
+												Thread.sleep((long)(Math.random() * 400));
+											} catch (InterruptedException e1) {
+												System.out.println("\nMcData Channel Thread can not sleep");
+												e1.printStackTrace();
+											}
+											try {
+
+												mcSocket_to_MC_Channel.send(msgDatagram_to_send);
+												System.out.println("\nMcData Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
+											} catch (IOException e) {
+												System.out.println("\nError: McData Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
+												e.printStackTrace();
+											}
+										}
 									}
 								}
 								else{
@@ -129,8 +155,9 @@ public class Peer  {
 								int senderID_msg = MessageManager.SeparateMsgContentStored(msg_received).getSenderID();
 
 
-								if(type_msg.equals("STORED")){
-									DatabaseChunksStored.StoreChunkID(fileID_msg + chunkNo_msg, senderID_msg);
+								if(type_msg.equals("STORED")){							
+									DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
+									DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
 									System.out.println("\nMc Control Channel stored chunk information received in the databse after receive STORED msg");
 								}
 								else{

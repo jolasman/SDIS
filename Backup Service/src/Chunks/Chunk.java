@@ -39,7 +39,7 @@ public class Chunk {
 		if(! directory.exists()){
 			directory.mkdir();
 		}
-		File newChunk = new File(path, fileID + String.format("%03d", chunkNo));
+		File newChunk = new File(path, fileID + chunkNo);
 
 		try (FileOutputStream out = new FileOutputStream(newChunk)) {
 			out.write(fileData, 0, MAX_BYTES); 

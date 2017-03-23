@@ -1,4 +1,5 @@
 package initiator;
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import chunks.Chunk;
+import database.DatabaseChunksReceived;
 import fileManagement.*;
 import message.CreateMessage;
 import peer.Peer;
@@ -22,7 +24,7 @@ public class Initiator {
 	private static int mcastPORT_MD_Channel;
 	@SuppressWarnings({ "unused", "resource" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-		
+
 		Scanner in = new Scanner(System.in);
 		System.out.println("\n1. Backup File");
 		System.out.println("2. Restore File");
@@ -42,6 +44,20 @@ public class Initiator {
 			String response = resp.nextLine();
 			String response_trimmed = response.trim();
 			String[] final_response = response_trimmed.split(" ");
+			
+			File file = new File("./ChunksReceived");
+
+			if(file.listFiles().length == 0){ System.out.println("nenhum ficheiro na pasta");
+			}else{
+				File afile[] = file.listFiles();
+				int i = 0;
+				for (int j = afile.length; i < j; i++) {
+					File arquivos = afile[i];
+					System.out.println("Load chunks received: " + arquivos.getName());
+					DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+				}
+			}
+			
 			if(final_response.length != 6){
 				System.out.println("\nError : usage <protocol_version> <peerID> <MC mcasIP> <MC mcastPORT> <MD mcasIP> <MD mcastPORT>");
 			}
@@ -55,10 +71,10 @@ public class Initiator {
 			mcastAddr_Channel_MD = InetAddress.getByName(final_response[4]);
 			mcastPORT_MD_Channel = Integer.parseInt(final_response[5]);
 
-			Peer newPeer = new Peer(peerID);
 			database.DatabasePeerID.StorePeerID(peerID);
-			FileManager files = new FileManager();
+			Peer newPeer = new Peer(peerID);
 
+			FileManager files = new FileManager();
 			if(files.isHaveFiles()){
 				InetAddress mcastAddr = mcastAddr_Channel_MD;
 				MulticastSocket socket = new MulticastSocket(mcastPORT_MD_Channel);
@@ -70,7 +86,6 @@ public class Initiator {
 					int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
 					int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
 					byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
-
 					Thread initiator = new Thread(){
 						public void run(){
 							try{

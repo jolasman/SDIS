@@ -1,18 +1,17 @@
 package database;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseChunksStored {
+	private static ArrayList<String> chunksStoredInfo = new ArrayList<String>();
 
-	public static Map<String, Integer> chunksStoredInfo = new HashMap<String, Integer>();
-
-	
-	public static void StoreChunkID(String chunkID, Integer senderID){
-		chunksStoredInfo.put(chunkID, senderID);
+	public static void StoreChunkID(String chunkID){
+		chunksStoredInfo.add(chunkID);
 	}
 	
-	public static Map<String, Integer> getChunkIDStored(){
+	public static ArrayList<String> getChunkIDStored(){
 		return chunksStoredInfo;
 	}
 }

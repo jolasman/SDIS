@@ -9,37 +9,36 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import chunks.Chunk;
-import message.*;;
+import database.*;
 /*
  * class que divide um determinado ficheiro em chunks de 64000 bytes
  */
 public class FileToCkunk {
 	private String fileID;
-	private int replication_degree = 3;
 	private static int sizeOfFiles = 64000;
 
 	@SuppressWarnings("unused")
-	public FileToCkunk(File file, String type) throws IOException, NoSuchAlgorithmException {
-		
-		MakeChunks(file, type);
+	public FileToCkunk(File file, String type, int replication_degree) throws IOException, NoSuchAlgorithmException {
+
+		MakeChunks(file, type , replication_degree);
 	}
-	
-	public void MakeChunks(File file,String type) throws IOException{
+
+	public void MakeChunks(File file,String type, int replication_degree) throws IOException{
 		int partCounter = 1;	
 		byte[] buffer = new byte[sizeOfFiles];
 
 		//sha256 algorithm ****************************************
 		String stringToHash = file.getName() + file.lastModified();
 		MessageDigest digest = null;
-		  try {
-		   digest = MessageDigest.getInstance("SHA-256");
-		  } catch (NoSuchAlgorithmException e) {
-		   e.printStackTrace();
-		  }
+		try {
+			digest = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
 
-		  byte[] hashedBytes = digest.digest(stringToHash.getBytes(StandardCharsets.UTF_8));
-		  String fileID = String.format("%064x", new java.math.BigInteger(1,hashedBytes));
-		  
+		byte[] hashedBytes = digest.digest(stringToHash.getBytes(StandardCharsets.UTF_8));
+		String fileID = String.format("%064x", new java.math.BigInteger(1,hashedBytes));
+
 		//end *************************************************************
 
 		try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
@@ -50,9 +49,10 @@ public class FileToCkunk {
 				//Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree);
 				Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree, "./Chunks");
 				newChunkObject.setChunksCreated(newChunkObject);
+				DatabaseChunksStored.StoreChunkID(fileID + partCounter);
 				partCounter++;
 			}
-			
+
 		} 
 		catch (FileNotFoundException e) {
 			System.out.println("Error when we try to get file data");

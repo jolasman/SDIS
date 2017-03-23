@@ -25,7 +25,7 @@ public class FileManager{
 			for (int j = afile.length; i < j; i++) {
 				File arquivos = afile[i];
 				String extensao = arquivos.getName().substring(arquivos.getName().lastIndexOf("."), arquivos.getName().length());
-				FileToCkunk initial_file = new FileToCkunk(arquivos,extensao);
+				FileToCkunk initial_file = new FileToCkunk(arquivos,extensao,2);
 				haveFiles = true;
 				//MergeChunks merged_file = new MergeChunks(initial_file.getChunks(), new File(path + "/" + "_file_merged__" + arquivos.getName() ));
 			}
@@ -36,7 +36,7 @@ public class FileManager{
 	}
 
 	@SuppressWarnings("unused")
-	public FileManager(String nameFile) throws NoSuchAlgorithmException, IOException {
+	public FileManager(String nameFile, int replication_degree) throws NoSuchAlgorithmException, IOException {
 		try{
 			File file = new File(path);
 
@@ -48,7 +48,7 @@ public class FileManager{
 
 				if(arquivos.getName().equals(nameFile)){
 					String extensao = arquivos.getName().substring(arquivos.getName().lastIndexOf("."), arquivos.getName().length());
-					FileToCkunk initial_file = new FileToCkunk(arquivos,extensao);
+					FileToCkunk initial_file = new FileToCkunk(arquivos,extensao, replication_degree);
 					haveFiles = true;
 				}
 				//MergeChunks merged_file = new MergeChunks(initial_file.getChunks(), new File(path + "/" + "_file_merged__" + arquivos.getName() ));
