@@ -67,8 +67,14 @@ public class Peer  {
 									Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
 									String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
-
 									try {
+										Thread.sleep((long)(Math.random() * 400));
+									} catch (InterruptedException e1) {
+										System.out.println("\nMcData Channel Thread can not sleep");
+										e1.printStackTrace();
+									}
+									try {
+										
 										mcSocket_to_MC_Channel.send(msgDatagram_to_send);
 										System.out.println("\nMcData Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
 									} catch (IOException e) {
