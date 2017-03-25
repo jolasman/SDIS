@@ -5,11 +5,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MergeChunks {
 
-	public  MergeChunks(List<File> files, File into)throws IOException {
+	public static void  MergeChunks(ArrayList<File> files, File into)throws IOException {
 
 		try (BufferedOutputStream mergingStream = new BufferedOutputStream(new FileOutputStream(into))) {
 			for (File f : files) {

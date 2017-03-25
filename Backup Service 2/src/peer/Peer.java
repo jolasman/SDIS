@@ -11,12 +11,15 @@ import java.net.MulticastSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import algorithms.SHA256;
 import chunks.Chunk;
 import database.DatabaseChunksReceived;
 import database.DatabaseChunksStored;
 import fileManagement.FileManager;
+import fileManagement.FileToCkunk;
+import fileManagement.MergeChunks;
 import initiator.Initiator;
 import message.*;
 
@@ -35,6 +38,7 @@ public class Peer  {
 	private volatile MulticastSocket mcSocket_MDR_receive;
 
 	private String local_path = "./ChunksReceived";
+	private String local_path_getchunk = "./ChunksToRestore";
 	private int peerID;
 
 	//como dar um peerID unico a cada um do sistema?
@@ -314,7 +318,7 @@ public class Peer  {
 								int senderID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getSenderID();
 								boolean stored = false;
 								boolean received = false;
-								String chunkIDtoCheck = fileID_msg+chunkNo_msg;
+								String chunkIDtoCheck = fileID_msg;
 
 								if(type_msg.equals("CHUNK")){
 									ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
@@ -334,7 +338,7 @@ public class Peer  {
 									}
 									if(!received){
 										if(!stored){
-											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, local_path);
+											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, local_path_getchunk + fileID_msg);
 											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 											System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
@@ -352,6 +356,27 @@ public class Peer  {
 												System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 												e.printStackTrace();
 											}
+											
+											if(chunkNo_msg == Initiator.getFilesNo()){
+												
+												File file = new File(local_path_getchunk + fileID_msg);
+
+												File afile[] = file.listFiles();
+												ArrayList<File> files = new ArrayList<File>();
+												int i = 0;
+												for (int j = afile.length; i < j; i++) {
+													files.add(afile[i]);
+													
+												}
+												File into = new File(fileID_msg);
+												try {
+													MergeChunks.MergeChunks(files, into);
+												} catch (IOException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
+												}
+											}
+											
 										}
 									}
 								}

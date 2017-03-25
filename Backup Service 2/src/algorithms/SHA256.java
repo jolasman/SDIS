@@ -9,7 +9,7 @@ public class SHA256 {
 	
 	public static String ToSha256(File file){
 		//sha256 algorithm ****************************************
-				String stringToHash = file.getName() + file.lastModified();
+				String stringToHash = file.getName();
 				MessageDigest digest = null;
 				try {
 					digest = MessageDigest.getInstance("SHA-256");
