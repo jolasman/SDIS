@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import algorithms.SHA256;
@@ -29,28 +30,27 @@ public class Initiator {
 	private static int mcastPORT_MC_Channel;
 	private static int mcastPORT_MD_Channel;
 	private static int mcastPORT_MDR_Channel;
+	private static char[] version = new char[3];
+	private static int peerID;
+
 
 	@SuppressWarnings({ "unused", "resource" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-
 		if(args.length != 8){			
 			System.out.println("\nError : usage <protocol_version> <peerID> <MC mcasIP> <MC mcastPORT> <MD mcasIP> <MD mcastPORT>");
 			return;
 		}
-
-		char[] version = new char[3];
 		version[0] = args[0].charAt(0);
 		version[1] = args[0].charAt(1);
 		version[2] = args[0].charAt(2);
-		int peerID = Integer.parseInt(args[1]);
+		peerID = Integer.parseInt(args[1]);
 		mcastAddr_Channel_MC = InetAddress.getByName(args[2]);
 		mcastPORT_MC_Channel = Integer.parseInt(args[3]);
 		mcastAddr_Channel_MD = InetAddress.getByName(args[4]);
 		mcastPORT_MD_Channel = Integer.parseInt(args[5]);
 		mcastAddr_Channel_MDR = InetAddress.getByName(args[6]);
 		mcastPORT_MDR_Channel = Integer.parseInt(args[7]);
-
-
+		
 		Scanner in = new Scanner(System.in);
 		System.out.println("\n1. Backup File");
 		System.out.println("2. Restore File");
@@ -58,140 +58,244 @@ public class Initiator {
 		System.out.println("4. Manage Local Service Storage");
 		System.out.println("5. Retrieve Local Service State information");
 		System.out.println("0. Quit");
-		// handle user commands
 		boolean quit = false;
 		int menuItem;
 		System.out.print("\nChoose menu item: ");
 		menuItem = in.nextInt();
 		switch (menuItem) {
 		case 1:
-			File file = new File("./ChunksReceived");
-			if(file.listFiles() == null){ 
-				System.out.println("nenhum ficheiro na pasta");
-			}
-			else{
-				File afile[] = file.listFiles();
-				int i = 0;
-				for (int j = afile.length; i < j; i++) {
-					File arquivos = afile[i];
-					System.out.println("Load chunks received: " + arquivos.getName());
-					DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
-				}
-			}
-
-			database.DatabasePeerID.StorePeerID(peerID);
-			Peer newPeer = new Peer(peerID);
-
-			FileManager files = new FileManager();
-			if(files.isHaveFiles()){
-				InetAddress mcastAddr = mcastAddr_Channel_MD;
-				socket_backup = new MulticastSocket(mcastPORT_MD_Channel);
-				socket_backup.joinGroup(mcastAddr);
-				socket_backup.setTimeToLive(1);
-
-				for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
-					String fileID = Chunk.getChunksCreated().get(i).getFileID();
-					int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
-					int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
-					byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
-					Thread initiator = new Thread(){
-						public void run(){
-							try{
-								String message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
-								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MD_Channel);
-								socket_backup.send(msgDatagram_to_send);
-								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
-							}catch (Exception e){e.printStackTrace();}
-						}
-					};
-					initiator.start();
-				}
-			}
-			else{}
-			// do something...
+			BackupFiles();
 			break;
 		case 2:
-			File file_restore_received = new File("./ChunksReceived");
-			if(file_restore_received.listFiles() == null){ 
-				System.out.println("nenhum ficheiro na pasta");
-			}
-			else{
-				File afile[] = file_restore_received.listFiles();
-				int i = 0;
-				for (int j = afile.length; i < j; i++) {
-					File arquivos = afile[i];
-					System.out.println("Loading chunks received: " + arquivos.getName());
-					DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
-				}
-			}
-			File file_restore_stored = new File("./Chunks");
-			if(file_restore_stored.listFiles() == null){ 
-				System.out.println("nenhum ficheiro na pasta");
-			}
-			else{
-				File afile[] = file_restore_stored.listFiles();
-				int i = 0;
-				System.out.println("\n");
-				for (int j = afile.length; i < j; i++) {
-					File arquivos = afile[i];
-					System.out.println("Loading chunks stored: " + arquivos.getName());
-					DatabaseChunksStored.StoreChunkID(arquivos.getName());
-				}
-			}
-			
-			
-			DatabasePeerID.StorePeerID(peerID);
-			Peer newPeer_restore = new Peer(peerID);
-			InetAddress mcastAddr = mcastAddr_Channel_MC;
-			socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
-			socket_restore.joinGroup(mcastAddr);
-			socket_restore.setTimeToLive(1);
-
-			Thread initiator_restore = new Thread(){
-				public void run(){
-					System.out.println("SHA256 File_Name(with chunkNo) and chunkNo separated too. <file_name> <chunkNo>" );
-					Scanner in = new Scanner(System.in);
-					String response_restore = in.nextLine();
-					String rsp_trimmed = response_restore.trim();
-					String[] final_resp = rsp_trimmed.split(" ");
-					String fileID = final_resp[0];
-					int chunkNo = Integer.parseInt(final_resp[1]);
-					try{
-						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileID, chunkNo);
-						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
-						socket_restore.send(msgDatagram_to_send);
-						System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
-					}catch (Exception e){e.printStackTrace();}
-				}
-			};
-			initiator_restore.start();
-
-			//GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-			
-			
-			// do something...
+			RestoreFiles();
 			break;
 		case 3:
-
-			// do something...
-			break;
-		case 4:
-
-			// do something...
-			break;
-		case 5:
-
-			// do something...
+			DeleteFiles();
 			break;
 		case 0:
 			quit = true;
 			break;
 		default:
 			System.out.println("Invalid choice.");
-
 		}
 	}
 	
+	public static void BackupFiles() throws IOException, NoSuchAlgorithmException{
+		DatabasePeerID.StorePeerID(peerID);
+		File file = new File("./ChunksReceived");
+		if(file.listFiles() == null){ 
+			System.out.println("nenhum ficheiro na pasta");
+		}
+		else{
+			File afile[] = file.listFiles();
+			int i = 0;
+			for (int j = afile.length; i < j; i++) {
+				File arquivos = afile[i];
+				System.out.println("Load chunks received: " + arquivos.getName());
+				DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+			}
+		}
+
+		
+		Peer newPeer = new Peer(peerID);
+
+		FileManager files = new FileManager();
+		if(files.isHaveFiles()){
+			InetAddress mcastAddr = mcastAddr_Channel_MD;
+			socket_backup = new MulticastSocket(mcastPORT_MD_Channel);
+			socket_backup.joinGroup(mcastAddr);
+			socket_backup.setTimeToLive(1);
+
+			for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
+				String fileID = Chunk.getChunksCreated().get(i).getFileID();
+				int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
+				int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
+				byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
+				Thread initiator = new Thread(){
+					public void run(){
+						try{
+							String message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
+							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MD_Channel);
+							socket_backup.send(msgDatagram_to_send);
+							System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
+						}catch (Exception e){e.printStackTrace();}
+					}
+				};
+				initiator.start();
+			}
+		}
+		else{}
+	}
+	
+	public static void RestoreFiles() throws IOException, NoSuchAlgorithmException{
+		
+		DatabasePeerID.StorePeerID(peerID);
+		Peer newPeer_restore = new Peer(peerID);
+		InetAddress mcastAddr = mcastAddr_Channel_MC;
+		socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
+		socket_restore.joinGroup(mcastAddr);
+		socket_restore.setTimeToLive(1);
+
+		File file_restore_received = new File("./ChunksReceived");
+		if(file_restore_received.listFiles() == null){ 
+			System.out.println("nenhum ficheiro na pasta");
+		}
+		else{
+			File afile[] = file_restore_received.listFiles();
+			int i = 0;
+			for (int j = afile.length; i < j; i++) {
+				File arquivos = afile[i];
+				System.out.println("Loading chunks received: " + arquivos.getName());
+				DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+			}
+		}
+		File file_restore_stored = new File("./Chunks");
+		if(file_restore_stored.listFiles() == null){ 
+			System.out.println("nenhum ficheiro na pasta");
+		}
+		else{
+			File afile[] = file_restore_stored.listFiles();
+			int i = 0;
+			System.out.println("\n");
+			for (int j = afile.length; i < j; i++) {
+				File arquivos = afile[i];
+				System.out.println("Loading chunks stored: " + arquivos.getName());
+				DatabaseChunksStored.StoreChunkID(arquivos.getName());
+			}
+		}
+		
+		
+		
+		Thread initiator_restore = new Thread(){
+			public void run(){
+				System.out.println("SHA256 File_Name(with chunkNo) and chunkNo separated too. <file_name> <chunkNo>" );
+				Scanner in = new Scanner(System.in);
+				String response_restore = in.nextLine();
+				String rsp_trimmed = response_restore.trim();
+				String[] final_resp = rsp_trimmed.split(" ");
+				String fileID = final_resp[0];
+				int chunkNo = Integer.parseInt(final_resp[1]);
+				try{
+					String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileID, chunkNo);
+					DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
+					socket_restore.send(msgDatagram_to_send);
+					System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
+				}catch (Exception e){e.printStackTrace();}
+			}
+		};
+		initiator_restore.start();
+
+		//GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+		
+		
+		// do something...
+	}
+	
+	public static void DeleteFiles() throws IOException, NoSuchAlgorithmException{
+		
+	}
+	
+	public static void BackupAFile(String fileName, int repl_degree, int peerID_rec) throws IOException, NoSuchAlgorithmException{
+		File file = new File("./ChunksReceived");
+		if(file.listFiles() == null){ 
+			System.out.println("nenhum ficheiro na pasta");
+		}
+		else{
+			File afile[] = file.listFiles();
+			int i = 0;
+			for (int j = afile.length; i < j; i++) {
+				File arquivos = afile[i];
+				System.out.println("Load chunks received: " + arquivos.getName());
+				DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+			}
+		}
+		Peer newPeer = new Peer(peerID_rec);
+
+		FileManager files = new FileManager(fileName, repl_degree);
+		if(files.isHaveFiles()){
+			InetAddress mcastAddr = mcastAddr_Channel_MD;
+			socket_backup = new MulticastSocket(mcastPORT_MD_Channel);
+			socket_backup.joinGroup(mcastAddr);
+			socket_backup.setTimeToLive(1);
+
+			for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
+				String fileID = Chunk.getChunksCreated().get(i).getFileID();
+				int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
+				int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
+				byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
+				Thread initiator = new Thread(){
+					public void run(){
+						try{
+							String message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
+							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MD_Channel);
+							socket_backup.send(msgDatagram_to_send);
+							System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
+						}catch (Exception e){e.printStackTrace();}
+					}
+				};
+				initiator.start();
+			}
+		}
+		else{}
+	}
+	
+	public static void RestoreAFile(String fileName, int peerID_R) throws IOException, NoSuchAlgorithmException{
+		InetAddress mcastAddr = mcastAddr_Channel_MC;
+		socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
+		socket_restore.joinGroup(mcastAddr);
+		socket_restore.setTimeToLive(1);
+
+		File file_restore_stored = new File("./Chunks");
+		if(file_restore_stored.listFiles() == null){ 
+			System.out.println("nenhum ficheiro na pasta");
+		}
+		else{
+			File afile[] = file_restore_stored.listFiles();
+			int i = 0;
+			System.out.println("\n");
+			for (int j = afile.length; i < j; i++) {
+				File arquivos = afile[i];
+				System.out.println("Loading chunks stored: " + arquivos.getName());
+				DatabaseChunksStored.StoreChunkID(arquivos.getName());
+			}
+		}
+		ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+		Thread initiator_restore = new Thread(){
+			public void run(){
+				String fileHashName = SHA256.ToSha256(fileName);
+				int count = 1;
+				String chunkIDtoCheck = fileHashName + count;
+				for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+					if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
+						try{
+							String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileHashName, count);
+							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
+							socket_restore.send(msgDatagram_to_send);
+							System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
+						}catch (Exception e){e.printStackTrace();}
+						count++;
+					}
+				}
+
+				
+			}
+		};
+		initiator_restore.start();
+
+		//GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+		
+		
+		// do something...
+	}
+	
+
+	public static char[] getVersion() {
+		return version;
+	}
+
+	public static void setVersion(char[] version) {
+		Initiator.version = version;
+	}
 	public static InetAddress getMcastAddr_Channel_MDR() {
 		return mcastAddr_Channel_MDR;
 	}

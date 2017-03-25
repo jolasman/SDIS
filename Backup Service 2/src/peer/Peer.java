@@ -8,12 +8,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import algorithms.SHA256;
 import chunks.Chunk;
 import database.DatabaseChunksReceived;
 import database.DatabaseChunksStored;
+import fileManagement.FileManager;
 import initiator.Initiator;
 import message.*;
 
@@ -23,6 +26,8 @@ import message.*;
  *
  */
 public class Peer  {
+	private volatile static MulticastSocket socket_backup; 
+	private volatile static MulticastSocket socket_restore;
 	private volatile MulticastSocket mcSocket_receive;
 	private volatile MulticastSocket mcSocket_to_MC_Channel;
 	private volatile MulticastSocket mcSocket_MC_Channel;
@@ -369,58 +374,7 @@ public class Peer  {
 		mdr.start();
 
 	}	
-	/**
-	 * trata das mensagem enviadas pela testApp class
-	 * @throws IOException
-	 */
-	@SuppressWarnings("resource")
-	public void testApp() throws IOException{
-		int PORT = 7777;
-		InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
-		DatagramSocket udp_testApp = new DatagramSocket(PORT, hostAddr_McSocket);
-
-		Thread mc = new Thread(){
-			public void run(){
-				System.out.println("\nTestApp Channel started...");
-				while(true){
-					byte[] buffer = new byte[65000];
-					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-					try {
-						System.out.println("\nTestApp Channel trying to receive a message....");
-						udp_testApp.receive(packet);
-
-						Thread mc_msg = new Thread(){
-							@SuppressWarnings("unused")
-							public void run(){
-								System.out.println("\nTestApp Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-								byte[] msg_received = packet.getData();	//msg recebida
-								String s = new String(msg_received, 0, packet.getLength());
-								String messageReceived = s.trim();
-								String message[] = messageReceived.split(" ");
-								System.out.println("\nTestApp Channel message received : " + s + "\n");
-
-								if(message[1].equals("BACKUP")){
-									int peerID = Integer.parseInt(message[0]);
-									String fileName = message[2];
-									int replicationDegree = Integer.parseInt(message[3]);
-								}else {
-									System.out.println("\nError: TestApp Channel received a message type different from BACKUP");
-								}
-							};
-
-						};
-						mc_msg.start();
-					} 
-					catch (IOException e) {
-						System.out.println("\nError: TestApp Channel when receiving in udp_testApp!\n");
-						e.printStackTrace();
-					}
-				}
-			};
-		};
-		mc.start();
-	}
-
+	
 	public int getPeerID() {
 		return peerID;
 	}
