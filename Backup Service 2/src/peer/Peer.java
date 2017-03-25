@@ -86,7 +86,7 @@ public class Peer  {
 									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 										if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
 											received = true;
-											System.out.println("\nPeer already have that chunk. Not Stored.\n");
+											System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
 										}
 									}
 									if(!received){
@@ -327,7 +327,7 @@ public class Peer  {
 									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 										if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
 											received = true;
-											System.out.println("\nPeer already have that chunk. Not Stored.\n");
+											System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
 										}
 									}
 									if(!received){

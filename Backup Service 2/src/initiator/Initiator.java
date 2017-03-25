@@ -80,7 +80,7 @@ public class Initiator {
 			}
 
 			database.DatabasePeerID.StorePeerID(peerID);
-			Peer newPeer = new Peer(peerID);
+			Peer newPeer = new Peer(50);
 
 			FileManager files = new FileManager();
 			if(files.isHaveFiles()){
@@ -141,7 +141,7 @@ public class Initiator {
 			
 			
 			DatabasePeerID.StorePeerID(peerID);
-			Peer newPeer_restore = new Peer(peerID);
+			Peer newPeer_restore = new Peer(50);
 			InetAddress mcastAddr = mcastAddr_Channel_MC;
 			socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
 			socket_restore.joinGroup(mcastAddr);
