@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import algorithms.SHA256;
 import chunks.Chunk;
 import database.*;
 /*
@@ -27,19 +29,7 @@ public class FileToCkunk {
 		int partCounter = 1;	
 		byte[] buffer = new byte[sizeOfFiles];
 
-		//sha256 algorithm ****************************************
-		String stringToHash = file.getName() + file.lastModified();
-		MessageDigest digest = null;
-		try {
-			digest = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-
-		byte[] hashedBytes = digest.digest(stringToHash.getBytes(StandardCharsets.UTF_8));
-		String fileID = String.format("%064x", new java.math.BigInteger(1,hashedBytes));
-
-		//end *************************************************************
+		fileID = SHA256.ToSha256(file); 
 
 		try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
 			int tmp = 0;

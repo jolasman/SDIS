@@ -51,6 +51,29 @@ public class Chunk {
 		}
 	}
 	
+	public Chunk(String fileID, int chunkNo, byte[] fileData, String path){
+		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
+		this.chunkData = fileData;
+		this.fileID = fileID;
+		this.chunkNo = chunkNo;
+		this.path = path;
+
+		File directory = new File(String.valueOf(path));
+		if(! directory.exists()){
+			directory.mkdir();
+		}
+		File newChunk = new File(path, fileID + chunkNo);
+
+		try (FileOutputStream out = new FileOutputStream(newChunk)) {
+			out.write(fileData, 0, MAX_BYTES); 
+			System.out.println("Chunk " + newChunk + " created");
+		}
+		catch (IOException e) {
+			System.out.println("Error when we try to write into a new Chunk");
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public static ArrayList<Chunk> getChunksCreated() {
 		return ChunksCreated;
