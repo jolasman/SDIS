@@ -142,12 +142,12 @@ public class Peer  {
 			public void run(){
 				System.out.println("\nMc Control Channel Started...");
 				while(true){
-					/*try {
+					try {
 						Thread.sleep((long)(Math.random() * 400));
 					}  catch (InterruptedException e1) {
 						System.out.println("\nMc Control Channel Thread can not sleep");
 						e1.printStackTrace();
-					}*/
+					}
 					byte[] buffer = new byte[85000];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
@@ -158,8 +158,6 @@ public class Peer  {
 							public void run(){
 								System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 								byte[] msg_received = packet.getData();	//msg recebida
-
-								System.out.println(new String (msg_received));
 
 								String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
@@ -207,11 +205,11 @@ public class Peer  {
 													fileInputStream.read(body);
 
 												} catch (FileNotFoundException e) {
-													System.out.println("File Not Found in received.");
+													System.out.println("File Not Found in received. Peer " + peerID);
 													e.printStackTrace();
 												}
 												catch (IOException e1) {
-													System.out.println("Error Reading The File received.");
+													System.out.println("Error Reading The File received. Peer " + peerID);
 													e1.printStackTrace();
 												}
 											}
@@ -242,14 +240,13 @@ public class Peer  {
 													fileInputStream.read(body);
 
 												} catch (FileNotFoundException e) {
-													System.out.println("File Not Found in stored.");
+													System.out.println("File Not Found in stored. Peer " + peerID);
 													e.printStackTrace();
 												}
 												catch (IOException e1) {
-													System.out.println("Error Reading The File in stored.");
+													System.out.println("Error Reading The File in stored. Peer " + peerID);
 													e1.printStackTrace();
 												}
-
 											}
 										}
 										try {
@@ -320,7 +317,7 @@ public class Peer  {
 									for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
 										if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
 											stored = true;
-											System.out.println("\nPeer will not store chunk. It's a chunk sent by him\n");
+											System.out.println("\nPeer " + peerID + " will not store chunk. It's a chunk sent by him\n");
 										}
 									}
 
@@ -339,7 +336,7 @@ public class Peer  {
 											try {
 												Thread.sleep((long)(Math.random() * 400));
 											} catch (InterruptedException e1) {
-												System.out.println("\nMcData Channel Thread can not sleep");
+												System.out.println("\nMcData Channel Thread can not sleep. Peer " + peerID );
 												e1.printStackTrace();
 											}
 											try {
