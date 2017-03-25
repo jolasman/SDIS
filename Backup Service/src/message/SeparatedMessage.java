@@ -34,6 +34,24 @@ public class SeparatedMessage {
 		chunkNo = Integer.parseInt(final_Header[4]);
 		replication_degree = Integer.parseInt(final_Header[5]);
 	}
+	public SeparatedMessage(String header, byte[] body, String chunk){
+		if(chunk.equals("CHUNK")){
+			String header_trimed = header.trim();
+			String[] final_Header = header_trimed.split(" ");
+
+			String msgType = final_Header[0].toUpperCase();
+			this.header = header;
+			this.body = body;
+			type = msgType;
+			version[0] = final_Header[1].charAt(0);
+			version[1] = final_Header[1].charAt(1);
+			version[2] = final_Header[1].charAt(2);
+			senderID = Integer.parseInt(final_Header[2]);
+			fileID = final_Header[3];
+			chunkNo = Integer.parseInt(final_Header[4]);
+		}
+		
+	}
 
 	public SeparatedMessage(String header){
 		String header_trimed = header.trim();
