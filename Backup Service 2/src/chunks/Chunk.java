@@ -122,7 +122,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 	public String getChunkDataString(){
 		return new String(chunkData);
 	}
-
+	
 	public void setChunkData(byte[] fileData) {
 		this.chunkData = fileData;
 	}

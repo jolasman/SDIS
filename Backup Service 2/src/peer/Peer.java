@@ -64,16 +64,15 @@ public class Peer  {
 			public void run(){
 				System.out.println("\nMcData Channel Started...");
 				while(true){
-					byte[] buffer = new byte[85000];
+					byte[] buffer = new byte[64800];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
 						mcSocket_receive.receive(packet);
-						System.out.println("\nMcData Channel receiving a new message....");
 						Thread md_msg = new Thread(){
 							public void run(){
 								System.out.println("\nMcData Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-								byte[] msg_received = packet.getData();	//msg recebida
-
+								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
+								
 								String fileID_msg = MessageManager.SeparateMsgContent(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContent(msg_received).getChunkNo();
 								byte[] filedata_msg = MessageManager.SeparateMsgContent(msg_received).getBody();
@@ -144,11 +143,8 @@ public class Peer  {
 	public void McChannel() throws IOException{
 		mcSocket_MC_Channel = new MulticastSocket(Initiator.getMcastPORT_MC_Channel());
 		mcSocket_to_MDR_Channel = new MulticastSocket(Initiator.getMcastPORT_MDR_Channel());
-		//InetAddress hostAddr_McSocket = InetAddress.getLocalHost();
 		InetAddress mcastAddr_MC = Initiator.getMcastAddr_Channel_MC();
 		mcSocket_MC_Channel.joinGroup(mcastAddr_MC);
-		//DatagramSocket udp_msg_Mc = new DatagramSocket(PORT_MC_Channel,hostAddr_McSocket);
-
 		Thread mc = new Thread(){
 			public void run(){
 				System.out.println("\nMc Control Channel Started...");
@@ -157,9 +153,7 @@ public class Peer  {
 				while(true){
 					try {
 						mcSocket_MC_Channel.receive(packet);
-						System.out.println("\nMc Control Channel receiving a new a message..." );
 						Thread mc_msg = new Thread(){
-							@SuppressWarnings("resource")
 							public void run(){
 								System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
@@ -213,7 +207,9 @@ public class Peer  {
 													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() + "body length : " + chunkFile.getChunkData().length);
+													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
+															"\nbody length : " + chunkFile.getChunkData().length +
+															"\nchunk data: " + new String(chunkFile.getChunkData()));
 												} 
 												catch (FileNotFoundException e) {
 													System.out.println("Error when we try to get file data");
@@ -245,8 +241,10 @@ public class Peer  {
 													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() + "body length : " + chunkFile.getChunkData().length);
-												} 
+													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
+															"\nbody length : " + chunkFile.getChunkData().length +
+															"\nchunk data: " + new String(chunkFile.getChunkData()));
+													} 
 												catch (FileNotFoundException e) {
 													System.out.println("Error when we try to get file data");
 													e.printStackTrace();

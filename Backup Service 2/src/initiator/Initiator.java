@@ -210,7 +210,7 @@ public class Initiator {
 		if(file.listFiles() == null){ 
 			System.out.println("nenhum ficheiro na pasta");
 		}
-		else{
+		else{ //carregar ficheiros que estão na pasta Chunks
 			File afile[] = file.listFiles();
 			int i = 0;
 			for (int j = afile.length; i < j; i++) {
@@ -266,7 +266,7 @@ public class Initiator {
 		if(file_restore_stored.listFiles() == null){ 
 			System.out.println("nenhum ficheiro na pasta");
 		}
-		else{
+		else{ //carrega os ficheiros que estao na pagina Chunks
 			File afile[] = file_restore_stored.listFiles();
 			int i = 0;
 			System.out.println("\n");
