@@ -14,23 +14,24 @@ import chunks.Chunk;
 
 public class MergeChunks {
 
-	public static void  MergeChunks(ArrayList<Chunk> chunks, File into)throws IOException {
+	public static void  MergeChunks(ArrayList<Chunk> chunks, String path)throws IOException {
 
 		Collections.sort(chunks);		
 		
-		try (FileOutputStream mergingStream = new FileOutputStream(into)) {
+		try (FileOutputStream mergingStream = new FileOutputStream(path)) {
 			
 			
 			for (Chunk c : chunks) {
+				System.out.println(c.getChunkID() + " chunkNo:  " + c.getChunkNo() + "tamanho : " + c.getChunkData().length);
 				mergingStream.write(c.getChunkData());
 			}
 			mergingStream.flush();
 			mergingStream.close();
 			
-			System.out.println("Merge of all chunks into the file " + into + " created");
+			System.out.println("Merge of all chunks into the file " + path + " created");
 		}
 		catch (Exception e) {
-			System.out.println("Can't merge all chunks into the file " + into);
+			System.out.println("Can't merge all chunks into the file " + path);
 		}
 	}
 

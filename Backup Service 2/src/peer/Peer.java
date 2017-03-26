@@ -294,7 +294,7 @@ public class Peer  {
 			public void run(){
 				System.out.println("\nMc Data Recovery Channel Started...");
 				while(true){
-					byte[] buffer = new byte[85000];
+					byte[] buffer = new byte[64800];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
 						mcSocket_MDR_receive.receive(packet);
@@ -303,8 +303,8 @@ public class Peer  {
 							@SuppressWarnings("unused") 
 							public void run(){
 								System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-								byte[] msg_received = packet.getData();	//msg recebida
-
+								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
+								
 								String fileID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getChunkNo();
 								byte[] filedata_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getBody();
@@ -316,7 +316,7 @@ public class Peer  {
 								String chunkIDtoCheck = fileID_msg;
 
 								if(type_msg.equals("CHUNK")){
-									ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+									/*ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 									ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 									for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
 										if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
@@ -330,7 +330,7 @@ public class Peer  {
 											received = true;
 											System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
 										}
-									}
+									}*/
 									if(!received){
 										if(!stored){
 											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
@@ -357,10 +357,11 @@ public class Peer  {
 											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
 											if(Integer.parseInt(chun) == 4){
 
-												File file = new File(local_path_getchunk + peerID);
+												
 												File into = new File("imagem.jpg");
 												try {
-													MergeChunks.MergeChunks(Chunk.getChunksRestore(), into);
+													MergeChunks.MergeChunks(Chunk.getChunksRestore(), "imagem.jpg");
+													Chunk.getChunksRestore().clear();
 												} catch (IOException e) {
 													// TODO Auto-generated catch block
 													e.printStackTrace();
