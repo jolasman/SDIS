@@ -82,7 +82,7 @@ public class Initiator {
 		}
 	}
 
-	public static void BackupFiles() throws IOException, NoSuchAlgorithmException{
+	public synchronized static void BackupFiles() throws IOException, NoSuchAlgorithmException{
 		DatabasePeerID.StorePeerID(peerID);
 		File file = new File("./ChunksReceived");
 		if(file.listFiles() == null){ 
@@ -129,7 +129,7 @@ public class Initiator {
 		else{}
 	}
 
-	public static void RestoreFiles() throws IOException, NoSuchAlgorithmException{
+	public synchronized static void RestoreFiles() throws IOException, NoSuchAlgorithmException{
 
 		DatabasePeerID.StorePeerID(peerID);
 		Peer newPeer_restore = new Peer(peerID);
@@ -193,11 +193,11 @@ public class Initiator {
 		// do something...
 	}
 
-	public static void DeleteFiles() throws IOException, NoSuchAlgorithmException{
+	public synchronized static void DeleteFiles() throws IOException, NoSuchAlgorithmException{
 
 	}
 
-	public static void BackupAFile(String fileName, int repl_degree, int peerID_rec) throws IOException, NoSuchAlgorithmException{
+	public synchronized static void BackupAFile(String fileName, int repl_degree, int peerID_rec) throws IOException, NoSuchAlgorithmException{
 
 		mcastAddr_Channel_MC = InetAddress.getByName("225.4.5.6");
 		mcastPORT_MC_Channel = 4444;
@@ -249,7 +249,7 @@ public class Initiator {
 		else{}
 	}
 
-	public static void RestoreAFile(String fileName, int peerID_R) throws IOException, NoSuchAlgorithmException{
+	public synchronized static void RestoreAFile(String fileName, int peerID_R) throws IOException, NoSuchAlgorithmException{
 		mcastAddr_Channel_MC = InetAddress.getByName("225.4.5.6");
 		mcastPORT_MC_Channel = 4444;
 		mcastAddr_Channel_MD = InetAddress.getByName("225.4.5.6");
@@ -302,6 +302,7 @@ public class Initiator {
 								socket_restore.send(msgDatagram_to_send);
 								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
 								System.out.println("\n" + message_to_Send);
+							;
 								chunkNO++;
 								
 							}catch (Exception e){

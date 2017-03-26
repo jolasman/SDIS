@@ -53,7 +53,7 @@ public class Peer  {
 		//testApp();
 	}
 	@SuppressWarnings("unused")
-	public void  McDataChannel() throws IOException{
+	public synchronized void  McDataChannel() throws IOException{
 		mcSocket_receive = new MulticastSocket(Initiator.getMcastPORT_MD_Channel());
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MD();
 		InetAddress hostAddr_MD_Channel = InetAddress.getLocalHost();
@@ -140,7 +140,7 @@ public class Peer  {
 		md.start();
 	}	
 
-	public void McChannel() throws IOException{
+	public synchronized void McChannel() throws IOException{
 		mcSocket_MC_Channel = new MulticastSocket(Initiator.getMcastPORT_MC_Channel());
 		mcSocket_to_MDR_Channel = new MulticastSocket(Initiator.getMcastPORT_MDR_Channel());
 		InetAddress mcastAddr_MC = Initiator.getMcastAddr_Channel_MC();
@@ -157,7 +157,11 @@ public class Peer  {
 							public void run(){
 								System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
-
+								
+								String aa = new String(msg_received);
+								System.out.println("\n mensagem recebida da testApp: " +aa);
+								System.out.println("\n *******************************************: " );
+								
 								String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 								String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
@@ -287,7 +291,7 @@ public class Peer  {
 		mc.start();
 	}
 
-	public void McDataRecovery() throws IOException{
+	public synchronized void McDataRecovery() throws IOException{
 		mcSocket_MDR_receive = new MulticastSocket(Initiator.getMcastPORT_MDR_Channel());
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MDR();
 		//InetAddress hostAddr_MDR_Channel = InetAddress.getLocalHost();
