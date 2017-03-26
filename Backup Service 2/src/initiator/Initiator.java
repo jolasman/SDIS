@@ -33,6 +33,7 @@ public class Initiator {
 	private static char[] version = new char[3];
 	private static int peerID;
 	private static int filesNo;
+	private static String file_Real_Name;
 
 
 	@SuppressWarnings({ "unused", "resource" })
@@ -260,6 +261,9 @@ public class Initiator {
 		socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
 		socket_restore.joinGroup(mcastAddr);
 		socket_restore.setTimeToLive(1);
+		
+		file_Real_Name = fileName;
+		
 
 		File file_restore_stored = new File("./Chunks");
 		if(file_restore_stored.listFiles() == null){ 
@@ -383,5 +387,13 @@ public class Initiator {
 
 	public static void setFilesNo(int filesNo) {
 		Initiator.filesNo = filesNo;
+	}
+
+	public static String getFile_Real_Name() {
+		return file_Real_Name;
+	}
+
+	public static void setFile_Real_Name(String file_Real_Name) {
+		Initiator.file_Real_Name = file_Real_Name;
 	}
 }

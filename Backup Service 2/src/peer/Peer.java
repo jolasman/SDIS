@@ -1,5 +1,6 @@
 package peer;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -208,18 +209,23 @@ public class Peer  {
 										for (int j = afile.length; i < j; i++) {
 											File arquivos = afile[i];
 											if(arquivos.getName().equals(chunkIDtoCheck)){
-												body = new byte[(int) arquivos.length()];
-												try {
-													FileInputStream fileInputStream = new FileInputStream(arquivos);
-													fileInputStream.read(body);
+												int partCounter = 1;	
+												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
+													int tmp = 0;
 
-												} catch (FileNotFoundException e) {
-													System.out.println("File Not Found in received. Peer " + peerID);
+													while ((tmp = file_data.read(body)) > 0) { //create each chunk while file have some bytes with data
+														System.out.println("body created to chunk: " + chunkIDtoCheck);
+														partCounter++;
+													}
+
+												} 
+												catch (FileNotFoundException e) {
+													System.out.println("Error when we try to get file data");
 													e.printStackTrace();
-												}
-												catch (IOException e1) {
-													System.out.println("Error Reading The File received. Peer " + peerID);
-													e1.printStackTrace();
+
+												} catch (IOException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
 												}
 											}
 										}
@@ -243,18 +249,23 @@ public class Peer  {
 										for (int j = afile.length; i < j; i++) {
 											File arquivos = afile[i];
 											if(arquivos.getName().equals(chunkIDtoCheck)){
-												body = new byte[(int) arquivos.length()];
-												try {
-													FileInputStream fileInputStream = new FileInputStream(arquivos);
-													fileInputStream.read(body);
+												int partCounter = 1;	
+												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
+													int tmp = 0;
 
-												} catch (FileNotFoundException e) {
-													System.out.println("File Not Found in stored. Peer " + peerID);
+													while ((tmp = file_data.read(body)) > 0) { //create each chunk while file have some bytes with data
+														System.out.println("body created to chunk: " + chunkIDtoCheck);
+														partCounter++;
+													}
+
+												} 
+												catch (FileNotFoundException e) {
+													System.out.println("Error when we try to get file data");
 													e.printStackTrace();
-												}
-												catch (IOException e1) {
-													System.out.println("Error Reading The File in stored. Peer " + peerID);
-													e1.printStackTrace();
+
+												} catch (IOException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
 												}
 											}
 										}
@@ -356,10 +367,12 @@ public class Peer  {
 												System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 												e.printStackTrace();
 											}
+											String chun = fileID_msg.substring(fileID_msg.length()-1);
 											
-											if(chunkNo_msg == Initiator.getFilesNo()){
+											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
+											if(Integer.parseInt(chun) == 2){
 												
-												File file = new File(local_path_getchunk + fileID_msg);
+												File file = new File(local_path_getchunk + peerID);
 
 												File afile[] = file.listFiles();
 												ArrayList<File> files = new ArrayList<File>();
@@ -368,7 +381,7 @@ public class Peer  {
 													files.add(afile[i]);
 													
 												}
-												File into = new File(fileID_msg);
+												File into = new File(Initiator.getFile_Real_Name());
 												try {
 													MergeChunks.MergeChunks(files, into);
 												} catch (IOException e) {
