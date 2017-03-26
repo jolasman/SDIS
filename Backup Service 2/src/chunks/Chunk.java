@@ -3,11 +3,13 @@ package chunks;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import message.MessageManager;
 
-public class Chunk implements Comparable<Chunk>{
+public class Chunk implements Comparable<Chunk>,Serializable{
 	private String chunkID = "";
 	private int replication_degree;
 	private static int MAX_BYTES = 64000;
@@ -44,8 +46,9 @@ public class Chunk implements Comparable<Chunk>{
 		}
 		File newChunk = new File(path, fileID + chunkNo);
 
-		try (FileOutputStream out = new FileOutputStream(newChunk)) {
-			out.write(fileData, 0, MAX_BYTES); 
+		try (ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream(newChunk))) {
+			out.writeObject(this); 
+			out.close();
 			System.out.println("Chunk " + newChunk + " created");
 		}
 		catch (IOException e) {
@@ -67,8 +70,9 @@ public class Chunk implements Comparable<Chunk>{
 		}
 		File newChunk = new File(path, fileID + chunkNo);
 
-		try (FileOutputStream out = new FileOutputStream(newChunk)) {
-			out.write(fileData, 0, MAX_BYTES); 
+		try (ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream(newChunk))) {
+			out.writeObject(this); 
+			out.close();
 			System.out.println("Chunk " + newChunk + " created");
 		}
 		catch (IOException e) {

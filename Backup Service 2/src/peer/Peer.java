@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -151,10 +152,9 @@ public class Peer  {
 		Thread mc = new Thread(){
 			public void run(){
 				System.out.println("\nMc Control Channel Started...");
+				byte[] buffer = new byte[64800];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				while(true){
-
-					byte[] buffer = new byte[85000];
-					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
 						mcSocket_MC_Channel.receive(packet);
 						System.out.println("\nMc Control Channel receiving a new a message..." );
@@ -162,7 +162,7 @@ public class Peer  {
 							@SuppressWarnings("resource")
 							public void run(){
 								System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-								byte[] msg_received = packet.getData();	//msg recebida
+								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
 
 								String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
@@ -197,7 +197,8 @@ public class Peer  {
 										}
 									}
 									if(received){
-										byte[]  body = new byte[64000];
+										
+										Chunk chunkFile;
 										File file = new File("./ChunksReceived");
 										File afile[] = file.listFiles();
 										int i = 0;
@@ -205,32 +206,31 @@ public class Peer  {
 											File arquivos = afile[i];
 											if(arquivos.getName().equals(chunkIDtoCheck)){
 
-												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(arquivos))) {
-													int tmp = 0;
-
-													while ((tmp = file_data.read(body)) > 0) { //create each chunk while file have some bytes with data
-														System.out.println("body created to chunk: " + chunkIDtoCheck);
-
-													}
-													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, body);
+												try (ObjectInputStream file_data = new ObjectInputStream(new FileInputStream(arquivos))) {										
+													chunkFile = (Chunk) file_data.readObject();
+													file_data.close();
+													
+													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel());
-
+													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() + "body length : " + chunkFile.getChunkData().length);
 												} 
 												catch (FileNotFoundException e) {
 													System.out.println("Error when we try to get file data");
 													e.printStackTrace();
 
 												} catch (IOException e) {
-													// TODO Auto-generated catch block
+													System.out.println("Error when we try to get file");
+													e.printStackTrace();
+												} catch (ClassNotFoundException e) {
+													System.out.println("Error when we try to get file OBJECT data");
 													e.printStackTrace();
 												}
 											}
 										}
 									}
 									if(stored){										
-										byte[]  body = new byte[64000];
+										Chunk chunkFile;
 
 										File file = new File("./Chunks");
 										File afile[] = file.listFiles();
@@ -238,25 +238,25 @@ public class Peer  {
 										for (int j = afile.length; i < j; i++) {
 											File arquivos = afile[i];
 											if(arquivos.getName().equals(chunkIDtoCheck)){	
-												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(arquivos))) {
-													int tmp = 0;
-
-													while ((tmp = file_data.read(body)) > 0) { //create each chunk while file have some bytes with data
-
-														System.out.println("body created to chunk: " + chunkIDtoCheck);
-													}
-													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, body);
+												try (ObjectInputStream file_data = new ObjectInputStream(new FileInputStream(arquivos))) {										
+													chunkFile = (Chunk) file_data.readObject();
+													file_data.close();
+													
+													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel());
-
+													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() + "body length : " + chunkFile.getChunkData().length);
 												} 
 												catch (FileNotFoundException e) {
 													System.out.println("Error when we try to get file data");
 													e.printStackTrace();
 
 												} catch (IOException e) {
-													// TODO Auto-generated catch block
+													System.out.println("Error when we try to get file");
+													e.printStackTrace();
+												} catch (ClassNotFoundException e) {
+													System.out.println("Error when we try to get file OBJECT data");
+
 													e.printStackTrace();
 												}
 											}
@@ -293,9 +293,10 @@ public class Peer  {
 		Thread mdr = new Thread(){
 			public void run(){
 				System.out.println("\nMc Data Recovery Channel Started...");
+				byte[] buffer = new byte[64800];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				while(true){
-					byte[] buffer = new byte[64800];
-					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+					
 					try {
 						mcSocket_MDR_receive.receive(packet);
 						System.out.println("\nMc Data Recovery Channel receiving a new message....");
@@ -356,9 +357,6 @@ public class Peer  {
 
 											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
 											if(Integer.parseInt(chun) == 4){
-
-												
-												File into = new File("imagem.jpg");
 												try {
 													MergeChunks.MergeChunks(Chunk.getChunksRestore(), "imagem.jpg");
 													Chunk.getChunksRestore().clear();
