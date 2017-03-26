@@ -333,7 +333,8 @@ public class Peer  {
 									}
 									if(!received){
 										if(!stored){
-											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, local_path_getchunk + fileID_msg);
+											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
+											Chunk.setChunksRestore(newChunk1);
 											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 											System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
@@ -354,20 +355,12 @@ public class Peer  {
 											String chun = fileID_msg.substring(fileID_msg.length()-1);
 
 											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
-											if(Integer.parseInt(chun) == 2){
+											if(Integer.parseInt(chun) == 4){
 
 												File file = new File(local_path_getchunk + peerID);
-
-												File afile[] = file.listFiles();
-												ArrayList<File> files = new ArrayList<File>();
-												int i = 0;
-												for (int j = afile.length; i < j; i++) {
-													files.add(afile[i]);
-
-												}
-												File into = new File(Initiator.getFile_Real_Name());
+												File into = new File("imagem.jpg");
 												try {
-													MergeChunks.MergeChunks(files, into);
+													MergeChunks.MergeChunks(Chunk.getChunksRestore(), into);
 												} catch (IOException e) {
 													// TODO Auto-generated catch block
 													e.printStackTrace();

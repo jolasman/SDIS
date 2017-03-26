@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import message.MessageManager;
 
-public class Chunk {
+public class Chunk implements Comparable<Chunk>{
 	private String chunkID = "";
 	private int replication_degree;
 	private static int MAX_BYTES = 64000;
@@ -17,6 +17,9 @@ public class Chunk {
 	private String path;
 	private String type;
 	private static ArrayList<Chunk> ChunksCreated = new ArrayList<Chunk>();
+	private static ArrayList<Chunk> ChunksRestore = new ArrayList<Chunk>();
+
+
 
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree) { 
 
@@ -26,7 +29,7 @@ public class Chunk {
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
 	}
-	
+
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree, String path){
 		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
@@ -50,7 +53,7 @@ public class Chunk {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Chunk(String fileID, int chunkNo, byte[] fileData, String path){
 		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
@@ -72,9 +75,11 @@ public class Chunk {
 			System.out.println("Error when we try to write into a new Chunk");
 			e.printStackTrace();
 		}
+
 	}
-	
-	
+
+
+
 	public static ArrayList<Chunk> getChunksCreated() {
 		return ChunksCreated;
 	}
@@ -140,6 +145,30 @@ public class Chunk {
 
 	public void setReplication_degree(int replication_degree) {
 		this.replication_degree = replication_degree;
+	}
+
+	public static ArrayList<Chunk> getChunksRestore() {
+		return ChunksRestore;
+	}
+
+	public static void setChunksRestore(Chunk chunks) {
+		ChunksRestore.add(chunks);
+	}
+
+
+	@Override
+	public int compareTo(Chunk o){
+		int cNo = o.getChunkNo();
+		if(getChunkNo() > cNo){
+			return 1;
+		}else{
+			if(cNo > getChunkNo()){
+				return -1;
+			}else{
+				return 0;
+			}
+		}
+
 	}
 
 }
