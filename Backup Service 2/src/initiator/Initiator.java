@@ -291,7 +291,7 @@ public class Initiator {
 							try{
 								System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
 								char[] version = {'1','.','0'};
-								String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 2, fileHashName + chunkNO, chunkNO);
+								String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 33, fileHashName + chunkNO, chunkNO);
 								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
 								try {
 									Thread.sleep((long)(Math.random() * 400));

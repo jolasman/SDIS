@@ -346,10 +346,10 @@ public class Peer  {
 											System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
 											String chun = fileID_msg.substring(fileID_msg.length()-1);
 
-											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
-											if(Integer.parseInt(chun) == 4){
+											System.out.print("\nchunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk " + chun);
+											if(chunkNo_msg == 2){
 												try {
-													MergeChunks.MergeChunks(Chunk.getChunksRestore(), "imagem.jpg");
+													MergeChunks.MergeChunks(Chunk.getChunksRestore(), "Horario_merged.pdf");
 													Chunk.getChunksRestore().clear();
 												} catch (IOException e) {
 													// TODO Auto-generated catch block
