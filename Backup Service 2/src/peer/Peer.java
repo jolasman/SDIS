@@ -206,6 +206,12 @@ public class Peer  {
 													
 													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+													try {
+														Thread.sleep((long)(Math.random() * 400));
+													}  catch (InterruptedException e1) {
+														System.out.println("\nTestApp Thread can not sleep");
+														e1.printStackTrace();
+													}
 													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
 													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
 															"\nbody length : " + chunkFile.getChunkData().length +
@@ -286,18 +292,14 @@ public class Peer  {
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MDR();
 		//InetAddress hostAddr_MDR_Channel = InetAddress.getLocalHost();
 		mcSocket_MDR_receive.joinGroup(mcastAddr);
-
-
 		Thread mdr = new Thread(){
 			public void run(){
 				System.out.println("\nMc Data Recovery Channel Started...");
 				byte[] buffer = new byte[64800];
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				while(true){
-					
 					try {
 						mcSocket_MDR_receive.receive(packet);
-						System.out.println("\nMc Data Recovery Channel receiving a new message....");
 						Thread mdr_msg = new Thread(){
 							@SuppressWarnings("unused") 
 							public void run(){
@@ -333,24 +335,11 @@ public class Peer  {
 									if(!received){
 										if(!stored){
 											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
-											Chunk.setChunksRestore(newChunk1);
+											Chunk.setChunksRestore(chunkNo_msg + "",newChunk1);
+											
 											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 											System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
-											try {
-												Thread.sleep((long)(Math.random() * 400));
-											} catch (InterruptedException e1) {
-												System.out.println("\nMcData Channel Thread can not sleep. Peer " + peerID );
-												e1.printStackTrace();
-											}
-											try {
-
-												mcSocket_to_MC_Channel.send(msgDatagram_to_send);
-												System.out.println("\nMc Data Recovery Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
-											} catch (IOException e) {
-												System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
-												e.printStackTrace();
-											}
 											String chun = fileID_msg.substring(fileID_msg.length()-1);
 
 											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
@@ -363,6 +352,22 @@ public class Peer  {
 													e.printStackTrace();
 												}
 											}
+											
+											/*try {
+												Thread.sleep((long)(Math.random() * 400));
+											} catch (InterruptedException e1) {
+												System.out.println("\nMcData Channel Thread can not sleep. Peer " + peerID );
+												e1.printStackTrace();
+											}*/
+											try {
+
+												mcSocket_to_MC_Channel.send(msgDatagram_to_send);
+												System.out.println("\nMc Data Recovery Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
+											} catch (IOException e) {
+												System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
+												e.printStackTrace();
+											}
+											
 
 										}
 									}

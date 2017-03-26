@@ -8,22 +8,21 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import chunks.Chunk;
 
 public class MergeChunks {
 
-	public static void  MergeChunks(ArrayList<Chunk> chunks, String path)throws IOException {
-
-		Collections.sort(chunks);		
+	public static void  MergeChunks(HashMap<String,Chunk> chunks, String path)throws IOException {
+	
 		
 		try (FileOutputStream mergingStream = new FileOutputStream(path)) {
 			
-			
-			for (Chunk c : chunks) {
-				System.out.println(c.getChunkID() + " chunkNo:  " + c.getChunkNo() + "tamanho : " + c.getChunkData().length);
-				mergingStream.write(c.getChunkData());
+			for(int i = 0; i< chunks.size(); i++){
+				System.out.println(chunks.get((i + 1) + "").getChunkID() + " chunkNo:  " + chunks.get((i + 1) + "").getChunkNo() + "tamanho : " + chunks.get((i + 1) + "").getChunkData().length);
+				mergingStream.write(chunks.get((i + 1) + "").getChunkData());
 			}
 			mergingStream.flush();
 			mergingStream.close();

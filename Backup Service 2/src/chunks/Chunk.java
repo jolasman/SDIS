@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import message.MessageManager;
 
@@ -19,7 +20,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 	private String path;
 	private String type;
 	private static ArrayList<Chunk> ChunksCreated = new ArrayList<Chunk>();
-	private static ArrayList<Chunk> ChunksRestore = new ArrayList<Chunk>();
+	private static HashMap<String,Chunk> ChunksRestore = new HashMap<String,Chunk>();
 
 
 
@@ -151,12 +152,12 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 		this.replication_degree = replication_degree;
 	}
 
-	public static ArrayList<Chunk> getChunksRestore() {
+	public static HashMap<String, Chunk> getChunksRestore() {
 		return ChunksRestore;
 	}
 
-	public static void setChunksRestore(Chunk chunks) {
-		ChunksRestore.add(chunks);
+	public static void setChunksRestore(String chunkNo, Chunk chunks) {
+		ChunksRestore.put(chunkNo, chunks);
 	}
 
 

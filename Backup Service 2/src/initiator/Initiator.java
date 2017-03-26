@@ -293,16 +293,17 @@ public class Initiator {
 								char[] version = {'1','.','0'};
 								String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 2, fileHashName + chunkNO, chunkNO);
 								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
-								socket_restore.send(msgDatagram_to_send);
-								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
-								System.out.println("\n" + message_to_Send);
-								chunkNO++;
 								try {
 									Thread.sleep((long)(Math.random() * 400));
 								}  catch (InterruptedException e1) {
 									System.out.println("\nTestApp Thread can not sleep");
 									e1.printStackTrace();
 								}
+								socket_restore.send(msgDatagram_to_send);
+								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
+								System.out.println("\n" + message_to_Send);
+								chunkNO++;
+								
 							}catch (Exception e){
 								e.printStackTrace();
 							}
