@@ -152,12 +152,7 @@ public class Peer  {
 			public void run(){
 				System.out.println("\nMc Control Channel Started...");
 				while(true){
-					try {
-						Thread.sleep((long)(Math.random() * 400));
-					}  catch (InterruptedException e1) {
-						System.out.println("\nMc Control Channel Thread can not sleep");
-						e1.printStackTrace();
-					}
+
 					byte[] buffer = new byte[85000];
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
@@ -209,14 +204,18 @@ public class Peer  {
 										for (int j = afile.length; i < j; i++) {
 											File arquivos = afile[i];
 											if(arquivos.getName().equals(chunkIDtoCheck)){
-												int partCounter = 1;	
-												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
+
+												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(arquivos))) {
 													int tmp = 0;
 
 													while ((tmp = file_data.read(body)) > 0) { //create each chunk while file have some bytes with data
 														System.out.println("body created to chunk: " + chunkIDtoCheck);
-														partCounter++;
+
 													}
+													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, body);
+													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
+													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel());
 
 												} 
 												catch (FileNotFoundException e) {
@@ -229,16 +228,6 @@ public class Peer  {
 												}
 											}
 										}
-										try {
-											String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, body);
-											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
-											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel());
-										} catch (IOException e) {
-											System.out.println("\nError: Mc Control Channel when trying to send de CHUNK message to: " + Initiator.getMcastAddr_Channel_MDR() + " --- " + Initiator.getMcastPORT_MDR_Channel());
-											e.printStackTrace();
-										}
-
 									}
 									if(stored){										
 										byte[]  body = new byte[64000];
@@ -248,15 +237,18 @@ public class Peer  {
 										int i = 0;
 										for (int j = afile.length; i < j; i++) {
 											File arquivos = afile[i];
-											if(arquivos.getName().equals(chunkIDtoCheck)){
-												int partCounter = 1;	
-												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
+											if(arquivos.getName().equals(chunkIDtoCheck)){	
+												try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(arquivos))) {
 													int tmp = 0;
 
 													while ((tmp = file_data.read(body)) > 0) { //create each chunk while file have some bytes with data
+
 														System.out.println("body created to chunk: " + chunkIDtoCheck);
-														partCounter++;
 													}
+													String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, body);
+													DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+													mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
+													System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel());
 
 												} 
 												catch (FileNotFoundException e) {
@@ -269,15 +261,7 @@ public class Peer  {
 												}
 											}
 										}
-										try {
-											String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, body);
-											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
-											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel());
-										} catch (IOException e) {
-											System.out.println("\nError: Mc Control Channel when trying to send de CHUNK message to: " + Initiator.getMcastAddr_Channel_MDR() + " --- " + Initiator.getMcastPORT_MDR_Channel());
-											e.printStackTrace();
-										}
+
 									}
 								}
 								else{
@@ -368,10 +352,10 @@ public class Peer  {
 												e.printStackTrace();
 											}
 											String chun = fileID_msg.substring(fileID_msg.length()-1);
-											
+
 											System.out.print("chunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk" + chun);
 											if(Integer.parseInt(chun) == 2){
-												
+
 												File file = new File(local_path_getchunk + peerID);
 
 												File afile[] = file.listFiles();
@@ -379,7 +363,7 @@ public class Peer  {
 												int i = 0;
 												for (int j = afile.length; i < j; i++) {
 													files.add(afile[i]);
-													
+
 												}
 												File into = new File(Initiator.getFile_Real_Name());
 												try {
@@ -389,7 +373,7 @@ public class Peer  {
 													e.printStackTrace();
 												}
 											}
-											
+
 										}
 									}
 								}
@@ -412,7 +396,7 @@ public class Peer  {
 		mdr.start();
 
 	}	
-	
+
 	public int getPeerID() {
 		return peerID;
 	}

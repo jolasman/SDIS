@@ -260,10 +260,7 @@ public class Initiator {
 		InetAddress mcastAddr = mcastAddr_Channel_MC;
 		socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
 		socket_restore.joinGroup(mcastAddr);
-		socket_restore.setTimeToLive(1);
-		
-		file_Real_Name = fileName;
-		
+		socket_restore.setTimeToLive(1);		
 
 		File file_restore_stored = new File("./Chunks");
 		if(file_restore_stored.listFiles() == null){ 
@@ -300,6 +297,12 @@ public class Initiator {
 								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
 								System.out.println("\n" + message_to_Send);
 								chunkNO++;
+								try {
+									Thread.sleep((long)(Math.random() * 400));
+								}  catch (InterruptedException e1) {
+									System.out.println("\nTestApp Thread can not sleep");
+									e1.printStackTrace();
+								}
 							}catch (Exception e){
 								e.printStackTrace();
 							}
@@ -312,6 +315,7 @@ public class Initiator {
 					}
 				}while(haveChunk);
 				filesNo = chunkNO;
+				
 			}
 		};
 		initiator_restore.start();
