@@ -50,7 +50,7 @@ public class Peer  {
 		McDataChannel();
 		McChannel();
 		McDataRecovery();
-		
+
 	}
 	@SuppressWarnings("unused")
 	public synchronized void  McDataChannel() throws IOException{
@@ -72,7 +72,7 @@ public class Peer  {
 							public void run(){
 								System.out.println("\nMcData Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
-								
+
 								String fileID_msg = MessageManager.SeparateMsgContent(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContent(msg_received).getChunkNo();
 								byte[] filedata_msg = MessageManager.SeparateMsgContent(msg_received).getBody();
@@ -155,11 +155,11 @@ public class Peer  {
 						mcSocket_MC_Channel.receive(packet);
 						System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
-						
+
 						String aa = new String(msg_received);
 						System.out.println("\n mensagem recebida da testApp: " +aa);
-						System.out.println("\n *******************************************: " );
-						
+
+
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 						int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 						String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
@@ -168,13 +168,13 @@ public class Peer  {
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg;
-
+						System.out.println("\n type: " + type_msg );
 						if(type_msg.equals("STORED")){							
 							DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
 							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
 							System.out.println("\nMc Control Channel stored chunk information received in the databse after receive STORED msg");
 						}
-						else if(type_msg.equals("GETCHUNK")){
+						if(type_msg.equals("GETCHUNK")){
 							ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 							for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
@@ -193,7 +193,7 @@ public class Peer  {
 								}
 							}
 							if(received){
-								
+
 								Chunk chunkFile;
 								File file = new File("./ChunksReceived");
 								File afile[] = file.listFiles();
@@ -205,7 +205,7 @@ public class Peer  {
 										try (ObjectInputStream file_data = new ObjectInputStream(new FileInputStream(arquivos))) {										
 											chunkFile = (Chunk) file_data.readObject();
 											file_data.close();
-											
+
 											String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 											try {
@@ -245,14 +245,14 @@ public class Peer  {
 										try (ObjectInputStream file_data = new ObjectInputStream(new FileInputStream(arquivos))) {										
 											chunkFile = (Chunk) file_data.readObject();
 											file_data.close();
-											
+
 											String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
 											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
 													"\nbody length : " + chunkFile.getChunkData().length +
 													"\nchunk data: " + new String(chunkFile.getChunkData()));
-											} 
+										} 
 										catch (FileNotFoundException e) {
 											System.out.println("Error when we try to get file data");
 											e.printStackTrace();
@@ -303,7 +303,7 @@ public class Peer  {
 							public void run(){
 								System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
-								
+
 								String fileID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getFileID();
 								int chunkNo_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getChunkNo();
 								byte[] filedata_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getBody();
@@ -334,7 +334,7 @@ public class Peer  {
 										if(!stored){
 											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
 											Chunk.setChunksRestore(chunkNo_msg + "",newChunk1);
-											
+
 											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 											System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
@@ -350,7 +350,7 @@ public class Peer  {
 													e.printStackTrace();
 												}
 											}
-											
+
 											/*try {
 												Thread.sleep((long)(Math.random() * 400));
 											} catch (InterruptedException e1) {
@@ -365,7 +365,7 @@ public class Peer  {
 												System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 												e.printStackTrace();
 											}
-											
+
 
 										}
 									}
