@@ -50,7 +50,7 @@ public class Peer  {
 		McDataChannel();
 		McChannel();
 		McDataRecovery();
-		//testApp();
+		
 	}
 	@SuppressWarnings("unused")
 	public synchronized void  McDataChannel() throws IOException{

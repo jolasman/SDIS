@@ -7,7 +7,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import algorithms.SHA256;
 import chunks.Chunk;
@@ -21,23 +23,31 @@ import peer.Peer;
 public class Initiator {
 	private volatile static MulticastSocket socket_backup; 
 	private volatile static MulticastSocket socket_restore; 
+	private volatile static MulticastSocket socket_Peers_Receive; 
+	private volatile static MulticastSocket socket_Peers_Send; 
 	private static int PORT_MC_Channel = 5000;
 	private static int PORT_MD_Channel = 5001;
 	private static int PORT_MDR_Channel = 5002;
+	private static int PORT_Peers_Channel = 5003;
 	private static InetAddress mcastAddr_Channel_MC;
 	private static InetAddress mcastAddr_Channel_MD;
 	private static InetAddress mcastAddr_Channel_MDR;
+	private static InetAddress mcastAddr_Peers_Channel;
+	private static InetAddress mcastAddr_Peers_Channel_Receive;
 	private static int mcastPORT_MC_Channel;
 	private static int mcastPORT_MD_Channel;
 	private static int mcastPORT_MDR_Channel;
+	private static int mcastPORT_Peers_Channel;
+	private static int mcastPORT_Peers_Channel_receive;
 	private static char[] version = new char[3];
 	private static int peerID;
 	private static int filesNo;
 	private static String file_Real_Name;
-
+	private static int NUMBER_OF_PEERS;
+	private static int activePeers;
 
 	@SuppressWarnings({ "unused", "resource" })
-	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+	public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
 		if(args.length != 8){			
 			System.out.println("\nError : usage <protocol_version> <peerID> <MC mcasIP> <MC mcastPORT> <MD mcasIP> <MD mcastPORT>");
 			return;
@@ -53,6 +63,12 @@ public class Initiator {
 		mcastAddr_Channel_MDR = InetAddress.getByName(args[6]);
 		mcastPORT_MDR_Channel = Integer.parseInt(args[7]);
 
+		mcastAddr_Peers_Channel = InetAddress.getByName("225.4.5.7");
+		mcastAddr_Peers_Channel_Receive = InetAddress.getByName("225.4.5.8");
+		mcastPORT_Peers_Channel = 1111;
+		mcastPORT_Peers_Channel_receive = 7777;
+
+
 		Scanner in = new Scanner(System.in);
 		System.out.println("\n1. Backup File");
 		System.out.println("2. Restore File");
@@ -65,11 +81,65 @@ public class Initiator {
 		System.out.print("\nChoose menu item: ");
 		menuItem = in.nextInt();
 		switch (menuItem) {
-		case 1:
-			BackupFiles();
+		case 1: //backup
+			Scanner resp_backup = new Scanner(System.in);
+			System.out.print("\nChoose file to Restore and the Replication Degree:  <file.pdf> <2>");
+			String response_backup = resp_backup.nextLine();
+			String rsp_trimmed_backup = response_backup.trim();
+			String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
+			String file_backup = final_Resp_backup[0];
+			int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
+
+			ReceiveKnowPeersActive();
+			SendKnowPeersActive();
+
+			System.out.print("\n\nReceiving how many Peers are in the System ");
+			System.out.print("[0%--");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("-");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("-");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("----");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("--");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("-");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("-");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("-");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("--");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("-");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.print("---------->100%]");
+			TimeUnit.SECONDS.sleep(1);
+			System.out.println("\n\n Done! We have " + getNUMBER_OF_PEERS() + " Peers actives in the System");
+			activePeers = getNUMBER_OF_PEERS();
+			if(replication_degree_backup <= getNUMBER_OF_PEERS()){
+				System.out.println("\nStarting the backup of the file: " + file_backup);
+				BackupFileInitiator(file_backup,replication_degree_backup);
+			}else{
+				System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ getNUMBER_OF_PEERS());
+			}
+			
 			break;
-		case 2:
-			RestoreFiles();
+		case 2: //restore
+			Scanner resp_restore = new Scanner(System.in);
+			System.out.print("\nChoose file to Restore and the Replication Degree:  <file.pdf> <2>");
+			String response_restore = resp_restore.nextLine();
+			String rsp_trimmed_restore = response_restore.trim();
+			String[] final_Resp_restore = rsp_trimmed_restore.split(" ");
+			String file_restore = final_Resp_restore[0];
+			int replication_degree_restore = Integer.parseInt(final_Resp_restore[1]);
+
+			SendKnowPeersActive();
+
+			TimeUnit.SECONDS.sleep(3);
+
+			RestoreAFile(file_restore,replication_degree_restore );
 			break;
 		case 3:
 			DeleteFiles();
@@ -82,26 +152,24 @@ public class Initiator {
 		}
 	}
 
-	public synchronized static void BackupFiles() throws IOException, NoSuchAlgorithmException{
+	public synchronized static void BackupFileInitiator(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
 		DatabasePeerID.StorePeerID(peerID);
 		File file = new File("./ChunksReceived");
 		if(file.listFiles() == null){ 
-			System.out.println("nenhum ficheiro na pasta");
+			System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + peerID );
 		}
 		else{
 			File afile[] = file.listFiles();
 			int i = 0;
 			for (int j = afile.length; i < j; i++) {
 				File arquivos = afile[i];
-				System.out.println("Load chunks received: " + arquivos.getName());
+				System.out.println("Peer : " + peerID + " Load chunks received: " + arquivos.getName());
 				DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
 			}
 		}
-
-
 		Peer newPeer = new Peer(peerID);
 
-		FileManager files = new FileManager();
+		FileManager files = new FileManager(fileName, repl_degree);
 		if(files.isHaveFiles()){
 			InetAddress mcastAddr = mcastAddr_Channel_MD;
 			socket_backup = new MulticastSocket(mcastPORT_MD_Channel);
@@ -115,6 +183,12 @@ public class Initiator {
 				byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
 				Thread initiator = new Thread(){
 					public void run(){
+						try {
+							Thread.sleep((long)(Math.random() * 400));
+						}  catch (InterruptedException e1) {
+							System.out.println("\n Thread  Backup Initiator can not sleep");
+							e1.printStackTrace();
+						}
 						try{
 							String message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
 							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MD_Channel);
@@ -302,9 +376,8 @@ public class Initiator {
 								socket_restore.send(msgDatagram_to_send);
 								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
 								System.out.println("\n" + message_to_Send);
-							;
 								chunkNO++;
-								
+
 							}catch (Exception e){
 								e.printStackTrace();
 							}
@@ -317,13 +390,61 @@ public class Initiator {
 					}
 				}while(haveChunk);
 				filesNo = chunkNO;
-				
+
 			}
 		};
 		initiator_restore.start();
-		
+
 	}
 
+	
+	
+	
+	public synchronized static void ReceiveKnowPeersActive() throws IOException{
+		InetAddress mcastAddr = getMcastAddr_Peers_Channel_Receive();
+		socket_Peers_Receive = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
+		socket_Peers_Receive.joinGroup(mcastAddr);
+
+		Thread receivingPeers = new Thread(){
+			public void run(){
+				byte[] buffer = new byte[65000];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+				long start_time = System.currentTimeMillis();
+				long wait_time = 10000;
+				long end_time = start_time + wait_time;
+
+				while (System.currentTimeMillis() < end_time){ //System.currentTimeMillis() < end_time
+					try {
+						socket_Peers_Receive.receive(packet);
+						String msg = new String(packet.getData(), packet.getOffset(),packet.getLength());
+
+						if(Integer.parseInt(msg) < 100 && Integer.parseInt(msg) > 0 ){
+							NUMBER_OF_PEERS++;
+						}else{
+							System.out.println("PeerID: "+ msg +" must be:  0 < PeerID > 100");
+						}
+					} catch (IOException e) {
+						System.out.println("can't receive in socker_Peers_receive");
+						e.printStackTrace();
+					}
+				}
+
+			}
+		};receivingPeers.start();
+	}
+
+	public synchronized static void SendKnowPeersActive() throws IOException{
+		InetAddress mcastAddr = getMcastAddr_Peers_Channel_Receive();
+		socket_Peers_Send = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
+		String message_to_Send = peerID + "";
+		DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, getMcastPORT_Peers_Channel_receive());
+		try{
+			socket_Peers_Send.send(msgDatagram_to_send);
+		} catch (Exception e) {
+			System.out.println("can't send in socket_Peers_Send");
+		}
+		socket_Peers_Send.close();
+	}
 
 	public static char[] getVersion() {
 		return version;
@@ -401,5 +522,61 @@ public class Initiator {
 
 	public static void setFile_Real_Name(String file_Real_Name) {
 		Initiator.file_Real_Name = file_Real_Name;
+	}
+
+	public static int getPORT_Peers_Channel() {
+		return PORT_Peers_Channel;
+	}
+
+	public static void setPORT_Peers_Channel(int pORT_Peers_Channel) {
+		PORT_Peers_Channel = pORT_Peers_Channel;
+	}
+
+	public static InetAddress getMcastAddr_Peers_Channel() {
+		return mcastAddr_Peers_Channel;
+	}
+
+	public static void setMcastAddr_Peers_Channel(InetAddress mcastAdd_Peers_Channel) {
+		Initiator.mcastAddr_Peers_Channel = mcastAdd_Peers_Channel;
+	}
+
+	public static int getMcastPORT_Peers_Channel() {
+		return mcastPORT_Peers_Channel;
+	}
+
+	public static void setMcastPORT_Peers_Channel(int mcastPORT_Peers_Channel) {
+		Initiator.mcastPORT_Peers_Channel = mcastPORT_Peers_Channel;
+	}
+
+	public static int getNUMBER_OF_PEERS() {
+		return NUMBER_OF_PEERS;
+	}
+
+	public static void setNUMBER_OF_PEERS(int nUMBER_OF_PEERS) {
+		NUMBER_OF_PEERS = nUMBER_OF_PEERS;
+	}
+
+	public static InetAddress getMcastAddr_Peers_Channel_Receive() {
+		return mcastAddr_Peers_Channel_Receive;
+	}
+
+	public static void setMcastAddr_Peers_Channel_Receive(InetAddress mcastAddr_Peers_Channel_Receive) {
+		Initiator.mcastAddr_Peers_Channel_Receive = mcastAddr_Peers_Channel_Receive;
+	}
+
+	public static int getMcastPORT_Peers_Channel_receive() {
+		return mcastPORT_Peers_Channel_receive;
+	}
+
+	public static void setMcastPORT_Peers_Channel_receive(int mcastPORT_Peers_Channel_receive) {
+		Initiator.mcastPORT_Peers_Channel_receive = mcastPORT_Peers_Channel_receive;
+	}
+
+	public static int getActivePeers() {
+		return activePeers;
+	}
+
+	public static void setActivePeers(int activePeers) {
+		Initiator.activePeers = activePeers;
 	}
 }
