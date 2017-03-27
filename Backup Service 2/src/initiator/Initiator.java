@@ -125,6 +125,8 @@ public class Initiator {
 			break;
 		case 4:
 			Peer newPeer = new Peer(peerID);
+			ReceiveKnowPeersActive();
+			SendKnowPeersActive();
 			break;
 		case 0:
 			quit = true;
