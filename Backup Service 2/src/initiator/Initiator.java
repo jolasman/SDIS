@@ -73,8 +73,7 @@ public class Initiator {
 		System.out.println("\n1. Backup File");
 		System.out.println("2. Restore File");
 		System.out.println("3. Delete File");
-		System.out.println("4. Manage Local Service Storage");
-		System.out.println("5. Retrieve Local Service State information");
+		System.out.println("4. Just iniciate the Peer (connect to the multicast channels)");
 		System.out.println("0. Quit");
 		boolean quit = false;
 		int menuItem;
@@ -89,35 +88,10 @@ public class Initiator {
 			String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
 			String file_backup = final_Resp_backup[0];
 			int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
-
+			
 			ReceiveKnowPeersActive();
 			SendKnowPeersActive();
-
-			System.out.print("\n\nReceiving how many Peers are in the System ");
-			System.out.print("[0%--");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("-");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("-");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("----");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("--");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("-");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("-");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("-");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("--");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("-");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.print("---------->100%]");
-			TimeUnit.SECONDS.sleep(1);
-			System.out.println("\n\n Done! We have " + getNUMBER_OF_PEERS() + " Peers actives in the System");
-			activePeers = getNUMBER_OF_PEERS();
+			ReceivePeersConsole();
 			if(replication_degree_backup <= getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the backup of the file: " + file_backup);
 				BackupFileInitiator(file_backup,replication_degree_backup);
@@ -135,14 +109,22 @@ public class Initiator {
 			String file_restore = final_Resp_restore[0];
 			int replication_degree_restore = Integer.parseInt(final_Resp_restore[1]);
 
+			ReceiveKnowPeersActive();
 			SendKnowPeersActive();
+			ReceivePeersConsole();
+			if(replication_degree_restore <= getNUMBER_OF_PEERS()){
+				System.out.println("\nStarting the restore of the file: " + file_restore);
+				RestoreAFile(file_restore,replication_degree_restore );
+			}else{
+				System.out.println("\nYou need "+ replication_degree_restore +" Peers to restore! But you only have "+ getNUMBER_OF_PEERS());
+			}
 
-			TimeUnit.SECONDS.sleep(3);
-
-			RestoreAFile(file_restore,replication_degree_restore );
 			break;
 		case 3:
 			DeleteFiles();
+			break;
+		case 4:
+			Peer newPeer = new Peer(peerID);
 			break;
 		case 0:
 			quit = true;
@@ -397,7 +379,34 @@ public class Initiator {
 
 	}
 
-	
+	public static void ReceivePeersConsole() throws InterruptedException{
+		
+		System.out.print("\n\nReceiving how many Peers are in the System ");
+		System.out.print("[0%--");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("-");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("-");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("----");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("--");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("-");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("-");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("-");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("--");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("-");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.print("---------->100%]");
+		TimeUnit.SECONDS.sleep(1);
+		System.out.println("\n\n Done! We have " + getNUMBER_OF_PEERS() + " Peers actives in the System");
+		activePeers = getNUMBER_OF_PEERS();
+	}
 	
 	
 	public synchronized static void ReceiveKnowPeersActive() throws IOException{
