@@ -93,7 +93,9 @@ public class Initiator {
 
 			ReceiveKnowPeersActive();
 			SendKnowPeersActive();
+			//print funny loading text
 			ReceivePeersConsole();
+			TimeUnit.SECONDS.sleep(1);
 			if(replication_degree_backup <= getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the backup of the file: " + file_backup);
 				BackupFileInitiator(file_backup,replication_degree_backup);
@@ -113,7 +115,9 @@ public class Initiator {
 
 			ReceiveKnowPeersActive();
 			SendKnowPeersActive();
+			//print funny loading text
 			ReceivePeersConsole();
+			TimeUnit.SECONDS.sleep(1);
 			if(replication_degree_restore <= getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the restore of the file: " + file_restore);
 				RestoreAFile(file_restore,replication_degree_restore );
@@ -330,8 +334,8 @@ public class Initiator {
 
 		InetAddress mcastAddr = mcastAddr_Channel_MC;
 		socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
-		socket_restore.joinGroup(mcastAddr);
-		socket_restore.setTimeToLive(1);		
+		//socket_restore.joinGroup(mcastAddr);
+		//socket_restore.setTimeToLive(1);		
 
 		File file_restore_stored = new File("./Chunks");
 		if(file_restore_stored.listFiles() == null){ 
@@ -349,53 +353,43 @@ public class Initiator {
 		}
 		File fileArgs = new File("./Files/" + fileName); 
 		ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+		boolean haveChunk= true;
+		String fileHashName = SHA256.ToSha256(fileArgs);
+		int chunkNO = 1;		
+		do{
+			String chunkIDtoCheck = fileHashName + chunkNO;
+			for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+				if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
+					try{
+						System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
+						char[] version = {'1','.','0'};
+						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 33, fileHashName + chunkNO, chunkNO);
+						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
+						TimeUnit.SECONDS.sleep(1);
+						socket_restore.send(msgDatagram_to_send);
+						message_to_Send = "";
+						System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
+						System.out.println("\n" + message_to_Send);
+						chunkNO++;
 
-		Thread initiator_restore = new Thread(){
-			public void run(){
-				boolean haveChunk= true;
-				String fileHashName = SHA256.ToSha256(fileArgs);
-				int chunkNO = 1;		
-				do{
-					String chunkIDtoCheck = fileHashName + chunkNO;
-					for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
-						if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
-							try{
-								System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
-								char[] version = {'1','.','0'};
-								String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 33, fileHashName + chunkNO, chunkNO);
-								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
-								try {
-									Thread.sleep((long)(Math.random() * 400));
-								}  catch (InterruptedException e1) {
-									System.out.println("\nTestApp Thread can not sleep");
-									e1.printStackTrace();
-								}
-								socket_restore.send(msgDatagram_to_send);
-								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
-								System.out.println("\n" + message_to_Send);
-								chunkNO++;
-
-							}catch (Exception e){
-								e.printStackTrace();
-							}
-
-						}else{
-							if(i == chunksAlreadyStored.size() ){
-								haveChunk = false;
-							}
-						}
+					}catch (Exception e){
+						e.printStackTrace();
 					}
-				}while(haveChunk);
-				filesNo = chunkNO;
+					
 
+				}else{
+					if(i == chunksAlreadyStored.size() ){
+						haveChunk = false;
+					}
+				}
 			}
-		};
-		initiator_restore.start();
+		}while(haveChunk);
+		filesNo = chunkNO;
+		socket_restore.close();
 
 	}
 
 	public static void ReceivePeersConsole() throws InterruptedException{
-
 		System.out.print("\n\nReceiving how many Peers are in the System ");
 		System.out.print("[0%--");
 		TimeUnit.SECONDS.sleep(1);
@@ -409,11 +403,11 @@ public class Initiator {
 		TimeUnit.SECONDS.sleep(1);
 		System.out.print("-");
 		TimeUnit.SECONDS.sleep(1);
-		System.out.print("-");
+		System.out.print("-------");
 		TimeUnit.SECONDS.sleep(1);
 		System.out.print("-");
 		TimeUnit.SECONDS.sleep(1);
-		System.out.print("--");
+		System.out.print("---");
 		TimeUnit.SECONDS.sleep(1);
 		System.out.print("-");
 		TimeUnit.SECONDS.sleep(1);
