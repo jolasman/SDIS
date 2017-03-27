@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import algorithms.SHA256;
@@ -88,7 +90,7 @@ public class Initiator {
 			String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
 			String file_backup = final_Resp_backup[0];
 			int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
-			
+
 			ReceiveKnowPeersActive();
 			SendKnowPeersActive();
 			ReceivePeersConsole();
@@ -98,7 +100,7 @@ public class Initiator {
 			}else{
 				System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ getNUMBER_OF_PEERS());
 			}
-			
+
 			break;
 		case 2: //restore
 			Scanner resp_restore = new Scanner(System.in);
@@ -125,8 +127,19 @@ public class Initiator {
 			break;
 		case 4:
 			Peer newPeer = new Peer(peerID);
-			ReceiveKnowPeersActive();
-			SendKnowPeersActive();
+
+			Runnable helloRunnable = new Runnable() {// envia que esta activo de 10 em 10 segundos
+				public void run() {
+					try {
+						SendKnowPeersActive();
+					} catch (IOException e) {
+						System.out.println("Error : trying to send that i'm active in the system.");
+						e.printStackTrace();
+					}
+				}
+			};
+			ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+			executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.SECONDS);
 			break;
 		case 0:
 			quit = true;
@@ -382,7 +395,7 @@ public class Initiator {
 	}
 
 	public static void ReceivePeersConsole() throws InterruptedException{
-		
+
 		System.out.print("\n\nReceiving how many Peers are in the System ");
 		System.out.print("[0%--");
 		TimeUnit.SECONDS.sleep(1);
@@ -409,8 +422,8 @@ public class Initiator {
 		System.out.println("\n\n Done! We have " + getNUMBER_OF_PEERS() + " Peers actives in the System");
 		activePeers = getNUMBER_OF_PEERS();
 	}
-	
-	
+
+
 	public synchronized static void ReceiveKnowPeersActive() throws IOException{
 		InetAddress mcastAddr = getMcastAddr_Peers_Channel_Receive();
 		socket_Peers_Receive = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
@@ -423,14 +436,24 @@ public class Initiator {
 				long start_time = System.currentTimeMillis();
 				long wait_time = 10000;
 				long end_time = start_time + wait_time;
-
+				boolean existe = false;
+				ArrayList<Integer> arrayPeerIDs = new ArrayList<Integer>();
 				while (System.currentTimeMillis() < end_time){ //System.currentTimeMillis() < end_time
 					try {
 						socket_Peers_Receive.receive(packet);
 						String msg = new String(packet.getData(), packet.getOffset(),packet.getLength());
 
 						if(Integer.parseInt(msg) < 100 && Integer.parseInt(msg) > 0 ){
-							NUMBER_OF_PEERS++;
+							for(int i = 0; i < arrayPeerIDs.size(); i++){
+								if(arrayPeerIDs.get(i).equals(Integer.parseInt(msg))){
+									existe = true;
+									break;
+								}
+							}
+							if(!existe){
+								NUMBER_OF_PEERS++;
+								arrayPeerIDs.add(Integer.parseInt(msg));
+							}
 						}else{
 							System.out.println("PeerID: "+ msg +" must be:  0 < PeerID > 100");
 						}
