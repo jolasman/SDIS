@@ -84,7 +84,7 @@ public class Initiator {
 		switch (menuItem) {
 		case 1: //backup
 			Scanner resp_backup = new Scanner(System.in);
-			System.out.print("\nChoose file to Restore and the Replication Degree:  <file.pdf> <2>");
+			System.out.print("\nChoose file to Backup and the Replication Degree:  <file.pdf> <2>");
 			String response_backup = resp_backup.nextLine();
 			String rsp_trimmed_backup = response_backup.trim();
 			String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
@@ -120,7 +120,7 @@ public class Initiator {
 			TimeUnit.SECONDS.sleep(1);
 			if(replication_degree_restore <= getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the restore of the file: " + file_restore);
-				RestoreAFile(file_restore,replication_degree_restore );
+				RestoreFiles(file_restore,replication_degree_restore );
 			}else{
 				System.out.println("\nYou need "+ replication_degree_restore +" Peers to restore! But you only have "+ getNUMBER_OF_PEERS());
 			}
@@ -136,6 +136,19 @@ public class Initiator {
 			DeleteFiles();
 			break;
 		case 4:
+			File file = new File("./ChunksReceived");
+			if(file.listFiles() == null){ 
+				System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + peerID );
+			}
+			else{
+				File afile[] = file.listFiles();
+				int i = 0;
+				for (int j = afile.length; i < j; i++) {
+					File arquivos = afile[i];
+					System.out.println("Peer : " + peerID + " Load chunks received: " + arquivos.getName());
+					DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+				}
+			}
 			Peer newPeer = new Peer(peerID);
 			AlwaysSendingActvite();
 			break;			
@@ -198,7 +211,7 @@ public class Initiator {
 		else{}
 	}
 
-	public synchronized static void RestoreFiles(String fileName, int peerID_R) throws IOException, NoSuchAlgorithmException{
+	public synchronized static void RestoreFiles(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
 		socket_restore = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
 	
 		File file_restore_stored = new File("./Chunks");

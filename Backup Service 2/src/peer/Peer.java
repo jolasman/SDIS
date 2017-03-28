@@ -174,7 +174,7 @@ public class Peer  {
 							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
 							System.out.println("\nMc Control Channel stored chunk information received in the databse after receive STORED msg");
 						}
-						//if(type_msg.equals("GETCHUNK")){
+						else if(type_msg.equals("GETCHUNK")){
 							ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 							for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
@@ -269,7 +269,7 @@ public class Peer  {
 								}
 
 							}
-						//}
+						}
 						else{
 							System.out.println("\nERROR: Mc Control Channel not received a STORED or GETCHUNK message type\n" + type_msg);
 						}
@@ -298,85 +298,78 @@ public class Peer  {
 				while(true){
 					try {
 						mcSocket_MDR_receive.receive(packet);
-						Thread mdr_msg = new Thread(){
-							@SuppressWarnings("unused") 
-							public void run(){
-								System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-								byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
+						System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
+						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
 
-								String fileID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getFileID();
-								int chunkNo_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getChunkNo();
-								byte[] filedata_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getBody();
-								String type_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getType();
-								char[] version = MessageManager.SeparateMsgContentCHUNK(msg_received).getVersion();
-								int senderID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getSenderID();
-								boolean stored = false;
-								boolean received = false;
-								String chunkIDtoCheck = fileID_msg;
+						String fileID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getFileID();
+						int chunkNo_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getChunkNo();
+						byte[] filedata_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getBody();
+						String type_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getType();
+						char[] version = MessageManager.SeparateMsgContentCHUNK(msg_received).getVersion();
+						int senderID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getSenderID();
+						boolean stored = false;
+						boolean received = false;
+						String chunkIDtoCheck = fileID_msg;
 
-								if(type_msg.equals("CHUNK")){
-									/*ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
-									ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
-									for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
-										if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
-											stored = true;
-											System.out.println("\nPeer " + peerID + " will not store chunk. It's a chunk sent by him\n");
+						if(type_msg.equals("CHUNK")){
+							/*ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+							for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+								if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
+									stored = true;
+									System.out.println("\nPeer " + peerID + " will not store chunk. It's a chunk sent by him\n");
+								}
+							}
+
+							for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+								if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
+									received = true;
+									System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
+								}
+							}*/
+							if(!received){
+								if(!stored){
+									Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
+									Chunk.setChunksRestore(chunkNo_msg + "",newChunk1);
+
+									String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
+									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
+									System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
+									String chun = fileID_msg.substring(fileID_msg.length()-1);
+
+									System.out.print("\nchunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk " + chun);
+									if(chunkNo_msg == 2){
+										try {
+											MergeChunks.MergeChunks(Chunk.getChunksRestore(), "Horario_merged.pdf");
+											Chunk.getChunksRestore().clear();
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
 										}
 									}
 
-									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
-										if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
-											received = true;
-											System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
-										}
-									}*/
-									if(!received){
-										if(!stored){
-											Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
-											Chunk.setChunksRestore(chunkNo_msg + "",newChunk1);
-
-											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
-											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
-											System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
-											String chun = fileID_msg.substring(fileID_msg.length()-1);
-
-											System.out.print("\nchunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk " + chun);
-											if(chunkNo_msg == 2){
-												try {
-													MergeChunks.MergeChunks(Chunk.getChunksRestore(), "Horario_merged.pdf");
-													Chunk.getChunksRestore().clear();
-												} catch (IOException e) {
-													// TODO Auto-generated catch block
-													e.printStackTrace();
-												}
-											}
-
-											/*try {
-												Thread.sleep((long)(Math.random() * 400));
-											} catch (InterruptedException e1) {
-												System.out.println("\nMcData Channel Thread can not sleep. Peer " + peerID );
-												e1.printStackTrace();
-											}*/
-											try {
-
-												mcSocket_to_MC_Channel.send(msgDatagram_to_send);
-												System.out.println("\nMc Data Recovery Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
-											} catch (IOException e) {
-												System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
-												e.printStackTrace();
-											}
-
-
-										}
+									try {
+										Thread.sleep((long)(Math.random() * 400));
+									} catch (InterruptedException e1) {
+										System.out.println("\nMcData Channel Thread can not sleep. Peer " + peerID );
+										e1.printStackTrace();
 									}
-								}
-								else{
-									System.out.println("\n Error: Mc Data Recovery Channel just accept CHUNK messages");
-								}
-							};
+									try {
 
-						};
-						mdr_msg.start();
+										mcSocket_to_MC_Channel.send(msgDatagram_to_send);
+										System.out.println("\nMc Data Recovery Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
+									} catch (IOException e) {
+										System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
+										e.printStackTrace();
+									}
+
+
+								}
+							}
+						}
+						else{
+							System.out.println("\n Error: Mc Data Recovery Channel just accept CHUNK messages");
+						}
 					} 
 					catch (IOException e) {
 						System.out.println("\nError: Mc Data Recovery Channel when receiving in udp_receive_McSocket!\n");
