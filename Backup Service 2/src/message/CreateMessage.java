@@ -8,11 +8,14 @@ public class CreateMessage {
 	 * @return String message a enviar
 	 */
 	public static  synchronized byte[] MessageToSendPut( char[] version, int senderID, String fileID, int chunkNo, int replication_degree,byte[] body){
-		byte[] send = new byte[64800];
+		byte[] send = new byte[800];
+		byte[] sendbody = new byte[64000];
+		byte[] send_final = new byte[64800];
 		String message = "PUTCHUNK" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
-		send = Arrays.copyOfRange(message.getBytes(), 0, message.getBytes().length);
-		send= Arrays.copyOfRange(body, message.getBytes().length,body.length);		
-		return send;
+		send = message.getBytes();		
+		System.arraycopy(send,0,send_final,0,send.length);
+		System.arraycopy(body,0,send_final,send.length,body.length);
+		return send_final;
 	}
 	/**
 	 * constroi msg a enviar com os parametros passados no construtor Create Message (Stored)

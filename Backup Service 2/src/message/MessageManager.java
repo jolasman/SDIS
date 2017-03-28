@@ -21,7 +21,7 @@ public class MessageManager {
 		byte[] header_byte = new byte[800];
 		byte[] body = new byte[MAX_BYTES];
 		int index_body_begin = 0;
-
+		
 		if(original.length > 64000){
 			for (int i = 0; i < original.length; i++){
 				if (original[i] == (byte) '\r'){
@@ -38,12 +38,8 @@ public class MessageManager {
 				else{}
 			}
 		}
-		String header = "";	
-		for (int i = 0; i < index_body_begin; i++){
-			header += original[i]; 
-			}
-		
-			
+
+		String header = new String (header_byte);		
 		SeparatedMessage msgSeparated = new SeparatedMessage(header, body);	
 		return msgSeparated;
 	}
@@ -69,7 +65,7 @@ public class MessageManager {
 		SeparatedMessage msgSeparated = new SeparatedMessage(stored);	
 		return msgSeparated;
 	}
-
+	
 	public static synchronized SeparatedMessage SeparateMsgContentGETCHUNK(byte[] msg){
 
 		byte[] original = msg;
