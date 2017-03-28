@@ -29,7 +29,7 @@ public class TestApp {
 		String protocol = args[1];
 		String oper_1 = args[2];
 
-		if(protocol.equals("BACKUP")){
+		/*if(protocol.equals("BACKUP")){
 			int oper_2 = Integer.parseInt(args[3]);
 			Initiator.BackupAFile(oper_1, oper_2,peerID);
 		}
@@ -37,7 +37,7 @@ public class TestApp {
 		if(protocol.equals("RESTORE")){
 			Initiator.RestoreAFile(oper_1,peerID);
 
-		}
+		}*/
 
 
 	}

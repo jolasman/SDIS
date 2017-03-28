@@ -84,7 +84,7 @@ public class Initiator {
 		switch (menuItem) {
 		case 1: //backup
 			Scanner resp_backup = new Scanner(System.in);
-			System.out.print("\nChoose file to Backup and the Replication Degree:  <file.pdf> <2>");
+			System.out.print("\nChoose file to Backup and the Replication Degree:  Example :<file.pdf> <2>\n");
 			String response_backup = resp_backup.nextLine();
 			String rsp_trimmed_backup = response_backup.trim();
 			String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
@@ -106,7 +106,7 @@ public class Initiator {
 			break;
 		case 2: //restore
 			Scanner resp_restore = new Scanner(System.in);
-			System.out.print("\nChoose file to Restore and the Replication Degree:  <file.pdf> <2>");
+			System.out.print("\nChoose file to Restore and the Replication Degree:  Example :<file.pdf> <2>\n");
 			String response_restore = resp_restore.nextLine();
 			String rsp_trimmed_restore = response_restore.trim();
 			String[] final_Resp_restore = rsp_trimmed_restore.split(" ");
@@ -160,11 +160,12 @@ public class Initiator {
 		}
 	}
 
+	//backup
 	public synchronized static void BackupFileInitiator(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
 		DatabasePeerID.StorePeerID(peerID);
 		File file = new File("./ChunksReceived");
 		if(file.listFiles() == null){ 
-			System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + peerID );
+			System.out.println("\nNenhum ficheiro na pasta ChunksReceived. Peer:" + peerID );
 		}
 		else{
 			File afile[] = file.listFiles();
@@ -272,7 +273,7 @@ public class Initiator {
 	public synchronized static void DeleteFiles() throws IOException, NoSuchAlgorithmException{
 
 	}
-
+/*
 	public synchronized static void BackupAFile(String fileName, int repl_degree, int peerID_rec) throws IOException, NoSuchAlgorithmException{
 
 		mcastAddr_Channel_MC = InetAddress.getByName("225.4.5.6");
@@ -390,6 +391,7 @@ public class Initiator {
 		socket_restore.close();
 
 	}
+*/
 
 	public static void ReceivePeersConsole() throws InterruptedException{
 		System.out.print("\n\nReceiving how many Peers are in the System ");

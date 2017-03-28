@@ -26,7 +26,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree) { 
 
-		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
+		this.chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
 		this.replication_degree = replication_degree;
 		this.fileID = fileID;
@@ -34,7 +34,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 	}
 
 	public Chunk(String fileID, int chunkNo, byte[] fileData, int replication_degree, String path){
-		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
+		this.chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
 		this.replication_degree = replication_degree;
 		this.fileID = fileID;
@@ -50,7 +50,11 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 		try (ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream(newChunk))) {
 			out.writeObject(this); 
 			out.close();
+			//grava chunk no array
+			Chunk tosave = new Chunk(fileID, chunkNo, fileData, replication_degree);
+			ChunksCreated.add(tosave);
 			System.out.println("Chunk " + newChunk + " created");
+			
 		}
 		catch (IOException e) {
 			System.out.println("Error when we try to write into a new Chunk");
@@ -59,7 +63,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 	}
 
 	public Chunk(String fileID, int chunkNo, byte[] fileData, String path){
-		chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
+		this.chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
@@ -74,6 +78,9 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 		try (ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream(newChunk))) {
 			out.writeObject(this); 
 			out.close();
+			//grava chunk no array
+			Chunk tosave = new Chunk(fileID, chunkNo, fileData, replication_degree);
+			ChunksCreated.add(tosave);
 			System.out.println("Chunk " + newChunk + " created");
 		}
 		catch (IOException e) {

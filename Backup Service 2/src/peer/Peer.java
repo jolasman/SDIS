@@ -108,6 +108,7 @@ public class Peer  {
 									}
 									if(!received){
 										if(!stored){
+											System.out.println(new String(filedata_msg));
 											Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
 											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
@@ -389,8 +390,8 @@ public class Peer  {
 			public void run() {
 				if(getChunkNoVerify() == getPacketsReceived()){
 					try {
-						MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file." + extensaoFile);
-						Chunk.getChunksRestore().clear();
+						MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file" + extensaoFile);
+						//Chunk.getChunksRestore().clear();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
