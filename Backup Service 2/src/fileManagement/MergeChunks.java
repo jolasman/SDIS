@@ -19,7 +19,7 @@ public class MergeChunks {
 			mergingStream.flush();
 			mergingStream.close();
 			
-			System.out.println("Merge of all chunks into the file " + path + " created");
+			System.out.println("\nMerge of all chunks into the file " + path + " created");
 		}
 		catch (Exception e) {
 			System.out.println("Can't merge all chunks into the file " + path);

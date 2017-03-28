@@ -240,7 +240,9 @@ public class Initiator {
 					try{
 						System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
 						char[] version = {'1','.','0'};
-						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileHashName + chunkNO, chunkNO);
+						String extensao = fileName.substring(fileName.lastIndexOf("."), fileName.length());
+
+						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileHashName + chunkNO, chunkNO, extensao);
 						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
 						TimeUnit.SECONDS.sleep(1);
 						socket_restore.send(msgDatagram_to_send);
@@ -362,7 +364,8 @@ public class Initiator {
 					try{
 						System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
 						char[] version = {'1','.','0'};
-						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 33, fileHashName + chunkNO, chunkNO);
+						String extensao = fileName.substring(fileName.lastIndexOf("."), fileName.length());
+						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, 33, fileHashName + chunkNO, chunkNO, extensao);
 						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
 						TimeUnit.SECONDS.sleep(1);
 						socket_restore.send(msgDatagram_to_send);
