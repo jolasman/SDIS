@@ -9,7 +9,6 @@ public class CreateMessage {
 	 */
 	public static  synchronized byte[] MessageToSendPut( char[] version, int senderID, String fileID, int chunkNo, int replication_degree,byte[] body){
 		byte[] send = new byte[800];
-		byte[] sendbody = new byte[64000];
 		byte[] send_final = new byte[64800];
 		String message = "PUTCHUNK" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + chunkNo + " " + replication_degree +" " + "\r\n\r\n"; 
 		send = message.getBytes();		
@@ -42,7 +41,6 @@ public class CreateMessage {
 	//CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
 	public static synchronized byte[] MessageToSendChunk(char[] version, int senderID, String fileID, int chunkNo,String extensao, byte[] body){
 		byte[] send = new byte[800];
-
 		byte[] send_final = new byte[64800];
 		String message = "CHUNK" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + 
 				chunkNo + " " + extensao + " " + "\r\n\r\n";
