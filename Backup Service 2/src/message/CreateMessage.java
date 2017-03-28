@@ -29,21 +29,21 @@ public class CreateMessage {
 	}
 
 	//GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-	public static synchronized byte[] MessageToSendGetChunk(char[] version, int senderID, String fileID, int chunkNo, String extensao){
+	public static synchronized byte[] MessageToSendGetChunk(char[] version, int senderID, String fileID, int chunkNo){
 		byte[] send = new byte[64800];
 		String message = "GETCHUNK" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + 
-				chunkNo + " " + extensao + " " + "\r\n\r\n"; 
+				chunkNo + " " + "\r\n\r\n"; 
 		send = message.getBytes();
 		return send;
 	}
 
 
 	//CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
-	public static synchronized byte[] MessageToSendChunk(char[] version, int senderID, String fileID, int chunkNo,String extensao, byte[] body){
+	public static synchronized byte[] MessageToSendChunk(char[] version, int senderID, String fileID, int chunkNo, byte[] body){
 		byte[] send = new byte[800];
 		byte[] send_final = new byte[64800];
 		String message = "CHUNK" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + 
-				chunkNo + " " + extensao + " " + "\r\n\r\n";
+				chunkNo + " " + "\r\n\r\n";
 		send = message.getBytes();		
 		System.arraycopy(send,0,send_final,0,send.length);
 		System.arraycopy(body,0,send_final,send.length,body.length);

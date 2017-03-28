@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class DatabaseChunksReceived {
 
-	private static Map<String, Integer> chunksReceivedInfo = new HashMap<String, Integer>();
+	private static HashMap<String, Integer> chunksReceivedInfo = new HashMap<String, Integer>();
 	private static ArrayList<String> receivedChunksID = new ArrayList<String>();
 
 	public static void StoreReceivedChunkID_Sender(String chunkID, Integer senderID){

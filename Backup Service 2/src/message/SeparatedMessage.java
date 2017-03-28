@@ -11,7 +11,6 @@ public class SeparatedMessage {
 	private char[] version = new char[3];
 	private int senderID;
 	private String fileID;
-	private String extensao;
 	private int chunkNo;
 	private int replication_degree;
 	/**
@@ -50,7 +49,6 @@ public class SeparatedMessage {
 			senderID = Integer.parseInt(final_Header[2]);
 			fileID = final_Header[3];
 			chunkNo = Integer.parseInt(final_Header[4]);
-			extensao = (final_Header[5]);
 		}
 		
 	}
@@ -69,7 +67,6 @@ public class SeparatedMessage {
 			senderID = Integer.parseInt(final_Header[2]);
 			fileID = final_Header[3];
 			chunkNo = Integer.parseInt(final_Header[4]);
-			extensao = (final_Header[5]);
 		}
 		
 	}
@@ -139,10 +136,5 @@ public class SeparatedMessage {
 	public void setVersion(char[] version) {
 		this.version = version;
 	}
-	public String getExtensao() {
-		return extensao;
-	}
-	public void setExtensao(String extensao) {
-		this.extensao = extensao;
-	}
+
 }

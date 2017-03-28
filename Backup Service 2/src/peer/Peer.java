@@ -13,9 +13,12 @@ import java.net.MulticastSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 
 import algorithms.SHA256;
@@ -47,6 +50,7 @@ public class Peer  {
 	private int peerID;
 	private int chunkNoVerify;
 	private int packetsReceived;
+	private int senderPeerID;
 
 
 
@@ -91,6 +95,7 @@ public class Peer  {
 								boolean received = false;
 								String chunkIDtoCheck = fileID_msg+chunkNo_msg;
 								if(type_msg.equals("PUTCHUNK")){
+									setSenderPeerID(senderID_msg);
 									ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 									ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 									for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
@@ -157,6 +162,7 @@ public class Peer  {
 				System.out.println("\nMc Control Channel Started...");
 				byte[] buffer = new byte[64800];
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+				int packets = 0;
 				while(true){
 					try {
 						mcSocket_MC_Channel.receive(packet);
@@ -175,14 +181,38 @@ public class Peer  {
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg;
+
+
+
 						System.out.println("\n type: " + type_msg );
-						if(type_msg.equals("STORED")){							
-							DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
+
+
+						if(type_msg.equals("STORED")){
+
+							packets++;
+
+							if(packets == 1){
+								new Timer().schedule(new TimerTask() {          
+									@Override
+									public void run() {
+										try {
+											ReenviaPut();
+										} catch (NoSuchAlgorithmException | IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}
+								}, 10000);
+							}
+
+							//DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
 							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
-							System.out.println("\nMc Control Channel stored chunk information received in the databse after receive STORED msg");
+							System.out.println("\nPeer : " + senderID_msg + 
+									" sended a stored msg. Information received and stored\n");
+
+
 						}
 						else if(type_msg.equals("GETCHUNK")){
-							String extensao_msg = MessageManager.SeparateMsgContentGETCHUNK(msg_received).getExtensao();
 							ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 							for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
@@ -214,7 +244,7 @@ public class Peer  {
 											chunkFile = (Chunk) file_data.readObject();
 											file_data.close();
 
-											byte[] message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg,extensao_msg, chunkFile.getChunkData());
+											byte[] message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg, chunkFile.getChunkData());
 											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 											try {
 												Thread.sleep((long)(Math.random() * 400));
@@ -240,41 +270,7 @@ public class Peer  {
 									}
 								}
 							}
-							if(stored){										
-								Chunk chunkFile;
 
-								File file = new File("./Chunks");
-								File afile[] = file.listFiles();
-								int i = 0;
-								for (int j = afile.length; i < j; i++) {
-									File arquivos = afile[i];
-									if(arquivos.getName().equals(chunkIDtoCheck)){	
-										try (ObjectInputStream file_data = new ObjectInputStream(new FileInputStream(arquivos))) {										
-											chunkFile = (Chunk) file_data.readObject();
-											file_data.close();
-
-											byte[] message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg,extensao_msg, chunkFile.getChunkData());
-											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR, message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
-											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
-											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
-													"\nbody length : " + chunkFile.getChunkData().length);
-										} 
-										catch (FileNotFoundException e) {
-											System.out.println("Error when we try to get file data");
-											e.printStackTrace();
-
-										} catch (IOException e) {
-											System.out.println("Error when we try to get file");
-											e.printStackTrace();
-										} catch (ClassNotFoundException e) {
-											System.out.println("Error when we try to get file OBJECT data");
-
-											e.printStackTrace();
-										}
-									}
-								}
-
-							}
 						}
 						else{
 							System.out.println("\nERROR: Mc Control Channel not received a STORED or GETCHUNK message type\n" + type_msg);
@@ -294,7 +290,6 @@ public class Peer  {
 	public synchronized void McDataRecovery() throws IOException{
 		mcSocket_MDR_receive = new MulticastSocket(Initiator.getMcastPORT_MDR_Channel());
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MDR();
-		//InetAddress hostAddr_MDR_Channel = InetAddress.getLocalHost();
 		mcSocket_MDR_receive.joinGroup(mcastAddr);
 
 		Thread mdr = new Thread(){
@@ -316,27 +311,11 @@ public class Peer  {
 						String type_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getType();
 						char[] version = MessageManager.SeparateMsgContentCHUNK(msg_received).getVersion();
 						int senderID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getSenderID();
-						String extensao_message = MessageManager.SeparateMsgContentCHUNK(msg_received).getExtensao();
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg;
 
 						if(type_msg.equals("CHUNK")){
-							/*ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
-							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
-							for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
-								if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
-									stored = true;
-									System.out.println("\nPeer " + peerID + " will not store chunk. It's a chunk sent by him\n");
-								}
-							}
-
-							for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
-								if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
-									received = true;
-									System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
-								}
-							}*/
 							if(!received){
 								if(!stored){
 									Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
@@ -359,9 +338,11 @@ public class Peer  {
 									} catch (IOException e) {
 										System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 										e.printStackTrace();
-									}*/
-									if(Initiator.getFilesNo() == packetsReceived){
-										MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file" + extensao_message);
+									}*/									
+									String IDstored = Initiator.getFile_Hash_Name() + Initiator.getFilesNo();
+									String checkID = fileID_msg + chunkNo_msg;
+									if(IDstored.equals(checkID)){
+										MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file__" + Initiator.getFile_REAL_Name());
 										Chunk.getChunksRestore().clear();
 									}
 								}
@@ -382,24 +363,38 @@ public class Peer  {
 		};
 		mdr.start();
 
-	}	
-
-	public synchronized void MergeTimer(int timeMls, String extensaoFile){
-		new Timer().schedule(new TimerTask() {          
-			@Override
-			public void run() {
-				if(getChunkNoVerify() == getPacketsReceived()){
-					try {
-						MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file" + extensaoFile);
-						//Chunk.getChunksRestore().clear();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}   
-				}
-			}
-		}, timeMls);
 	}
+
+	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException{
+		ArrayList<String> IDs = DatabaseChunksReceived.getReceivedChunksID();
+		ArrayList<Integer> chunks = new ArrayList<Integer>(Collections.nCopies(Initiator.getChunksforBackup(), 0));
+
+		if(Initiator.getPeerID() == peerID){
+			for(int i = 1; i < Initiator.getChunksforBackup(); i++){ // por cada chunk 
+				int count = 0;
+				for(int j = 0; j < IDs.size(); j++){// por cada message Stored de um chunkID
+					String name = Initiator.getFile_Hash_Name() + i; //ChunkID 
+					if(name.equals(IDs.get(j))){ // se o hashname + chunkNo ==  chunkID da stored message received
+						count++;
+						chunks.set(i,count);// muda a posicao i para o valor do count
+					}
+				}
+			}			
+		}
+
+		for(int i = 1; i < Initiator.getChunksforBackup(); i++){
+			if(chunks.get(i) == Initiator.getReplicationDegree_backup()){
+				System.out.println("\n Numero de chunksNo :" + i + " received : " + chunks.get(i) + "\n");
+			}
+			else {
+				System.out.println("\n Numero de chunksNo :" + i + " --- : " + chunks.get(i) + "\n");
+				//Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
+			}
+		}
+
+
+	}
+
 
 	public int getPeerID() {
 		return peerID;
@@ -415,6 +410,12 @@ public class Peer  {
 	}
 	public void setPacketsReceived(int packetsReceived) {
 		this.packetsReceived = packetsReceived;
+	}
+	public int getSenderPeerID() {
+		return senderPeerID;
+	}
+	public void setSenderPeerID(int senderPeerID) {
+		this.senderPeerID = senderPeerID;
 	}
 
 }
