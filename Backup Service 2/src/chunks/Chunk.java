@@ -62,7 +62,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 		}
 	}
 
-	public Chunk(String fileID, int chunkNo, byte[] fileData, String path){
+	/*public Chunk(String fileID, int chunkNo, byte[] fileData, String path){
 		this.chunkID += fileID + chunkNo; //ID do Chunk e' o fileId + o chunckNo
 		this.chunkData = fileData;
 		this.fileID = fileID;
@@ -88,7 +88,7 @@ public class Chunk implements Comparable<Chunk>,Serializable{
 			e.printStackTrace();
 		}
 
-	}
+	}*/
 
 
 

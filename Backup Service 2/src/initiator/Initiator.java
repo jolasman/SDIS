@@ -98,7 +98,7 @@ public class Initiator {
 			//print funny loading text
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
-			if(replication_degree_backup <= getNUMBER_OF_PEERS()){
+			if(replication_degree_backup < getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the backup of the file: " + file_backup);
 				BackupFileInitiator(file_backup,replication_degree_backup);
 			}else{
@@ -187,7 +187,7 @@ public class Initiator {
 			socket_backup.joinGroup(mcastAddr);
 			socket_backup.setTimeToLive(1);
 
-			setChunksforBackup(Chunk.getChunksCreated().size());
+			setChunksforBackup(DatabaseChunksStored.getChunkIDStored().size());
 
 			for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
 				String fileID = Chunk.getChunksCreated().get(i).getFileID();

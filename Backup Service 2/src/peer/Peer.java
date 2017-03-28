@@ -367,7 +367,10 @@ public class Peer  {
 
 	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException{
 		ArrayList<String> IDs = DatabaseChunksReceived.getReceivedChunksID();
-		ArrayList<Integer> chunks = new ArrayList<Integer>(Collections.nCopies(Initiator.getChunksforBackup(), 0));
+		ArrayList<Integer> chunks = new ArrayList<Integer>(Initiator.getChunksforBackup());
+		for (int i = 0; i < Initiator.getChunksforBackup(); i++) {
+		    chunks.add(0);
+		}
 
 		if(Initiator.getPeerID() == peerID){
 			for(int i = 1; i < Initiator.getChunksforBackup(); i++){ // por cada chunk 
@@ -383,7 +386,7 @@ public class Peer  {
 		}
 
 		for(int i = 1; i < Initiator.getChunksforBackup(); i++){
-			if(chunks.get(i) == Initiator.getReplicationDegree_backup()){
+			if(chunks.get(i) >= Initiator.getReplicationDegree_backup()){
 				System.out.println("\n Numero de chunksNo :" + i + " received : " + chunks.get(i) + "\n");
 			}
 			else {
