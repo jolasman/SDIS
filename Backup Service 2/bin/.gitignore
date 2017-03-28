@@ -1,9 +1,2 @@
-/algorithms/
-/chunks/
-/database/
-/disk/
-/fileManagement/
-/initiator/
-/message/
 /peer/
-/tests/
+/initiator/

@@ -368,15 +368,15 @@ public class Peer  {
 	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException{
 		ArrayList<String> IDs = DatabaseChunksReceived.getReceivedChunksID();
 		ArrayList<Integer> chunks = new ArrayList<Integer>(Initiator.getChunksforBackup());
-		for (int i = 0; i < Initiator.getChunksforBackup(); i++) {
-		    chunks.add(0);
+		for (int i = 0; i < Initiator.getChunksforBackup() +1; i++) {
+			chunks.add(0);
 		}
-
 		if(Initiator.getPeerID() == peerID){
-			for(int i = 1; i < Initiator.getChunksforBackup(); i++){ // por cada chunk 
+			for(int i = 0; i < Initiator.getChunksforBackup(); i++){ // por cada chunk 
 				int count = 0;
 				for(int j = 0; j < IDs.size(); j++){// por cada message Stored de um chunkID
-					String name = Initiator.getFile_Hash_Name() + i; //ChunkID 
+					String name = Initiator.getFile_Hash_Name() + (i+1); //ChunkID 
+					System.out.println("\n" + name);
 					if(name.equals(IDs.get(j))){ // se o hashname + chunkNo ==  chunkID da stored message received
 						count++;
 						chunks.set(i,count);// muda a posicao i para o valor do count
@@ -385,12 +385,12 @@ public class Peer  {
 			}			
 		}
 
-		for(int i = 1; i < Initiator.getChunksforBackup(); i++){
+		for(int i = 0; i < Initiator.getChunksforBackup(); i++){
 			if(chunks.get(i) >= Initiator.getReplicationDegree_backup()){
-				System.out.println("\n Numero de chunksNo :" + i + " received : " + chunks.get(i) + "\n");
+				System.out.println("\n Numero de chunksNo :" + (i+1) + " received : " + chunks.get(i));
 			}
 			else {
-				System.out.println("\n Numero de chunksNo :" + i + " --- : " + chunks.get(i) + "\n");
+				System.out.println("\n Numero de chunksNo :" + (i+1) + " --- : " + chunks.get(i));
 				//Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
 			}
 		}

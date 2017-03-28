@@ -164,6 +164,11 @@ public class Initiator {
 
 	//backup
 	public synchronized static void BackupFileInitiator(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
+		
+		File fileArgs = new File("./Files/" + fileName); 
+		String fileHashName = SHA256.ToSha256(fileArgs);
+		setFile_Hash_Name(fileHashName);
+		
 		DatabasePeerID.StorePeerID(getPeerID());
 		File file = new File("./ChunksReceived");
 		if(file.listFiles() == null){ 
