@@ -29,7 +29,7 @@ public class MessageManager {
 							i + 2 < original.length && original[i+2] == (byte) '\r' &&
 							i + 3 < original.length && original[i+3] == (byte) '\n'){
 
-						index_body_begin = i+4;				
+						index_body_begin = i+3;				
 						System.arraycopy(original, 0, header_byte,0, i-1);
 						System.arraycopy(original, index_body_begin, body, 0, MAX_BYTES);
 						break;
@@ -103,7 +103,7 @@ public class MessageManager {
 							i + 2 < original.length && original[i+2] == (byte) '\r' &&
 							i + 3 < original.length && original[i+3] == (byte) '\n'){
 
-						index_body_begin = i+4;				
+						index_body_begin = i+3;				
 						System.arraycopy(original, 0, header_byte,0, i-1);
 						System.arraycopy(original, index_body_begin, body, 0, MAX_BYTES);
 						break;

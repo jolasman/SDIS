@@ -199,6 +199,8 @@ public class Initiator {
 							e1.printStackTrace();
 						}
 						try{
+							String aa = new String(body);
+							System.out.println(aa);
 							String message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
 							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MD_Channel);
 							socket_backup.send(msgDatagram_to_send);
