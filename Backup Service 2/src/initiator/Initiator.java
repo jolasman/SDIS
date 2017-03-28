@@ -249,7 +249,7 @@ public class Initiator {
 						socket_restore.send(msgDatagram_to_send);
 						
 						System.out.println("\n Iniciator send message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
-						System.out.println("\n" + message_to_Send);
+						System.out.println("\n" + new String(message_to_Send));
 						chunkNO++;
 						//message_to_Send = "";
 
@@ -265,7 +265,7 @@ public class Initiator {
 				}
 			}
 		}while(haveChunk);
-		filesNo = chunkNO;
+		setFilesNo(chunkNO);
 		socket_restore.close();
 
 	}

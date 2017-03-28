@@ -317,7 +317,6 @@ public class Peer  {
 						char[] version = MessageManager.SeparateMsgContentCHUNK(msg_received).getVersion();
 						int senderID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getSenderID();
 						String extensao_message = MessageManager.SeparateMsgContentCHUNK(msg_received).getExtensao();
-						MergeTimer(10000, extensao_message);
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg;
@@ -361,6 +360,10 @@ public class Peer  {
 										System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 										e.printStackTrace();
 									}*/
+									if(Initiator.getFilesNo() == packetsReceived){
+										MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file" + extensao_message);
+										Chunk.getChunksRestore().clear();
+									}
 								}
 
 							}
