@@ -244,10 +244,11 @@ public class Initiator {
 						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
 						TimeUnit.SECONDS.sleep(1);
 						socket_restore.send(msgDatagram_to_send);
-						message_to_Send = "";
+						
 						System.out.println("\n Iniciator send message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
 						System.out.println("\n" + message_to_Send);
 						chunkNO++;
+						//message_to_Send = "";
 
 					}catch (Exception e){
 						e.printStackTrace();

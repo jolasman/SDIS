@@ -295,7 +295,10 @@ public class Peer  {
 				System.out.println("\nMc Data Recovery Channel Started...");
 				byte[] buffer = new byte[64800];
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				while(true){
+				long start_time = System.currentTimeMillis();
+				long wait_time = 10000;
+				long end_time = start_time + wait_time;
+				while (System.currentTimeMillis() < end_time){
 					try {
 						mcSocket_MDR_receive.receive(packet);
 						System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
@@ -312,6 +315,7 @@ public class Peer  {
 						String chunkIDtoCheck = fileID_msg;
 
 						if(type_msg.equals("CHUNK")){
+							ArrayList<String> chunkIDsReceived = new ArrayList<String>();
 							/*ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 							for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
@@ -335,20 +339,8 @@ public class Peer  {
 									String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 									System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
-									String chun = fileID_msg.substring(fileID_msg.length()-1);
-
-									System.out.print("\nchunkNo : " + chunkNo_msg + " Peer : " + peerID + "NewCHunk " + chun);
-									if(chunkNo_msg == 2){
-										try {
-											MergeChunks.MergeChunks(Chunk.getChunksRestore(), "Horario_merged.pdf");
-											Chunk.getChunksRestore().clear();
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-									}
-
-									try {
+									String chunkFileNo = fileID_msg.substring(fileID_msg.length()-1);
+									/*try {
 										Thread.sleep((long)(Math.random() * 400));
 									} catch (InterruptedException e1) {
 										System.out.println("\nMcData Channel Thread can not sleep. Peer " + peerID );
@@ -361,9 +353,7 @@ public class Peer  {
 									} catch (IOException e) {
 										System.out.println("\nError: Mc Data Recovery Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 										e.printStackTrace();
-									}
-
-
+									}*/
 								}
 							}
 						}
@@ -376,6 +366,16 @@ public class Peer  {
 						e.printStackTrace();
 					}
 				}
+
+				//apos 10 segundos Merge dos CHunks recebidos
+					try {
+						MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file");
+						Chunk.getChunksRestore().clear();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				
 			};
 
 		};
