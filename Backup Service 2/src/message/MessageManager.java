@@ -1,4 +1,7 @@
 package message;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+
 /**
  * esta class trata as mensagens recebidas no socket
  * recebe um array de bytes (byte[]) com todos os dados da mesnagem e separa o header do body
@@ -6,6 +9,7 @@ package message;
  *
  */
 public class MessageManager {
+	private static int MAX_BYTES = 64000;
 	/**
 	 * 
 	 * @param msg byte[] com a mesnagem recebida no socket
@@ -15,7 +19,7 @@ public class MessageManager {
 
 		byte[] original = msg;
 		byte[] header_byte = new byte[800];
-		byte[] body = new byte[64000];
+		byte[] body = new byte[MAX_BYTES];
 		int index_body_begin = 0;
 		
 		if(original.length > 64000){
@@ -27,7 +31,7 @@ public class MessageManager {
 
 						index_body_begin = i+4;				
 						System.arraycopy(original, 0, header_byte,0, i-1);
-						System.arraycopy(original, index_body_begin, body, 0, 64000);
+						System.arraycopy(original, index_body_begin, body, 0, MAX_BYTES);
 						break;
 					}
 				}
@@ -66,7 +70,7 @@ public class MessageManager {
 
 		byte[] original = msg;
 		byte[] header_byte = new byte[800];
-		byte[] body = new byte[64000];
+		byte[] body = new byte[MAX_BYTES];
 		int index_body_begin = 0;
 
 		if(original.length > 64000){
@@ -78,7 +82,7 @@ public class MessageManager {
 
 						index_body_begin = i+4;				
 						System.arraycopy(original, 0, header_byte,0, i-1);
-						System.arraycopy(original, index_body_begin, body, 0, 64000);
+						System.arraycopy(original, index_body_begin, body, 0, MAX_BYTES);
 						break;
 					}
 				}

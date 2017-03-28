@@ -92,7 +92,7 @@ public class Initiator {
 			int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
 
 			ReceiveKnowPeersActive();
-			SendKnowPeersActive();
+			AlwaysSendingActvite();
 			//print funny loading text
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
@@ -114,7 +114,7 @@ public class Initiator {
 			int replication_degree_restore = Integer.parseInt(final_Resp_restore[1]);
 
 			ReceiveKnowPeersActive();
-			SendKnowPeersActive();
+			AlwaysSendingActvite();
 			//print funny loading text
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
@@ -127,24 +127,18 @@ public class Initiator {
 
 			break;
 		case 3:
+
+			ReceiveKnowPeersActive();
+			AlwaysSendingActvite();
+			//print funny loading text
+			ReceivePeersConsole();
+			TimeUnit.SECONDS.sleep(1);
 			DeleteFiles();
 			break;
 		case 4:
 			Peer newPeer = new Peer(peerID);
-
-			Runnable helloRunnable = new Runnable() {// envia que esta activo de 10 em 10 segundos
-				public void run() {
-					try {
-						SendKnowPeersActive();
-					} catch (IOException e) {
-						System.out.println("Error : trying to send that i'm active in the system.");
-						e.printStackTrace();
-					}
-				}
-			};
-			ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-			executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.SECONDS);
-			break;
+			AlwaysSendingActvite();
+			break;			
 		case 0:
 			quit = true;
 			break;
@@ -204,33 +198,14 @@ public class Initiator {
 		else{}
 	}
 
-	public synchronized static void RestoreFiles() throws IOException, NoSuchAlgorithmException{
-
-		DatabasePeerID.StorePeerID(peerID);
-		Peer newPeer_restore = new Peer(peerID);
-		InetAddress mcastAddr = mcastAddr_Channel_MC;
-		socket_restore = new MulticastSocket(mcastPORT_MC_Channel);
-		socket_restore.joinGroup(mcastAddr);
-		socket_restore.setTimeToLive(1);
-
-		File file_restore_received = new File("./ChunksReceived");
-		if(file_restore_received.listFiles() == null){ 
-			System.out.println("nenhum ficheiro na pasta");
-		}
-		else{
-			File afile[] = file_restore_received.listFiles();
-			int i = 0;
-			for (int j = afile.length; i < j; i++) {
-				File arquivos = afile[i];
-				System.out.println("Loading chunks received: " + arquivos.getName());
-				DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
-			}
-		}
+	public synchronized static void RestoreFiles(String fileName, int peerID_R) throws IOException, NoSuchAlgorithmException{
+		socket_restore = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
+	
 		File file_restore_stored = new File("./Chunks");
 		if(file_restore_stored.listFiles() == null){ 
 			System.out.println("nenhum ficheiro na pasta");
 		}
-		else{
+		else{ //carrega os ficheiros que estao na pagina Chunks
 			File afile[] = file_restore_stored.listFiles();
 			int i = 0;
 			System.out.println("\n");
@@ -240,32 +215,42 @@ public class Initiator {
 				DatabaseChunksStored.StoreChunkID(arquivos.getName());
 			}
 		}
+		File fileArgs = new File("./Files/" + fileName); 
+		ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+		boolean haveChunk= true;
+		String fileHashName = SHA256.ToSha256(fileArgs);
+		int chunkNO = 1;		
+		do{
+			String chunkIDtoCheck = fileHashName + chunkNO;
+			for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+				if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
+					try{
+						System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
+						char[] version = {'1','.','0'};
+						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileHashName + chunkNO, chunkNO);
+						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
+						TimeUnit.SECONDS.sleep(1);
+						socket_restore.send(msgDatagram_to_send);
+						message_to_Send = "";
+						System.out.println("\n Iniciator send message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
+						System.out.println("\n" + message_to_Send);
+						chunkNO++;
 
+					}catch (Exception e){
+						e.printStackTrace();
+					}
+					
 
-
-		Thread initiator_restore = new Thread(){
-			public void run(){
-				System.out.println("SHA256 File_Name(with chunkNo) and chunkNo separated too. <file_name> <chunkNo>" );
-				Scanner in = new Scanner(System.in);
-				String response_restore = in.nextLine();
-				String rsp_trimmed = response_restore.trim();
-				String[] final_resp = rsp_trimmed.split(" ");
-				String fileID = final_resp[0];
-				int chunkNo = Integer.parseInt(final_resp[1]);
-				try{
-					String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileID, chunkNo);
-					DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MC_Channel);
-					socket_restore.send(msgDatagram_to_send);
-					System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MC_Channel);
-				}catch (Exception e){e.printStackTrace();}
+				}else{
+					if(i == chunksAlreadyStored.size() ){
+						haveChunk = false;
+					}
+				}
 			}
-		};
-		initiator_restore.start();
+		}while(haveChunk);
+		filesNo = chunkNO;
+		socket_restore.close();
 
-		//GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-
-
-		// do something...
 	}
 
 	public synchronized static void DeleteFiles() throws IOException, NoSuchAlgorithmException{
@@ -474,6 +459,23 @@ public class Initiator {
 		socket_Peers_Send.close();
 	}
 
+	public synchronized static void AlwaysSendingActvite(){
+		Runnable helloRunnable = new Runnable() {// envia que esta activo de 10 em 10 segundos
+			public void run() {
+				try {
+					SendKnowPeersActive();
+				} catch (IOException e) {
+					System.out.println("Error : trying to send that i'm active in the system.");
+					e.printStackTrace();
+				}
+			}
+		};
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+		executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.SECONDS);
+		
+	}
+	
+	
 	public static char[] getVersion() {
 		return version;
 	}

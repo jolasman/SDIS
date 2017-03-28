@@ -157,7 +157,7 @@ public class Peer  {
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
 
 						String aa = new String(msg_received);
-						System.out.println("\n mensagem recebida da testApp: " +aa);
+						System.out.println("\n mensagem recebida no MC : " + aa);
 
 
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
@@ -169,11 +169,7 @@ public class Peer  {
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg;
 						System.out.println("\n type: " + type_msg );
-						if(type_msg.equals("STORED")){							
-							DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
-							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
-							System.out.println("\nMc Control Channel stored chunk information received in the databse after receive STORED msg");
-						}
+					
 						if(type_msg.equals("GETCHUNK")){
 							ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 							ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
@@ -269,6 +265,11 @@ public class Peer  {
 								}
 
 							}
+						}
+						if(type_msg.equals("STORED")){							
+							DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
+							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
+							System.out.println("\nMc Control Channel stored chunk information received in the databse after receive STORED msg");
 						}
 						else{
 							System.out.println("\nERROR: Mc Control Channel not received a STORED or GETCHUNK message type\n" + type_msg);
