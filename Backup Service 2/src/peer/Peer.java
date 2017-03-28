@@ -108,8 +108,6 @@ public class Peer  {
 									}
 									if(!received){
 										if(!stored){
-											String aa = new String(filedata_msg);
-											System.out.println(aa);
 											Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
 											byte[] message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
@@ -226,8 +224,7 @@ public class Peer  {
 											}
 											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
 											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
-													"\nbody length : " + chunkFile.getChunkData().length +
-													"\nchunk data: " + new String(chunkFile.getChunkData()));
+													"\nbody length : " + chunkFile.getChunkData().length);
 										} 
 										catch (FileNotFoundException e) {
 											System.out.println("Error when we try to get file data");
@@ -260,8 +257,7 @@ public class Peer  {
 											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR, message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
 											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
-													"\nbody length : " + chunkFile.getChunkData().length +
-													"\nchunk data: " + new String(chunkFile.getChunkData()));
+													"\nbody length : " + chunkFile.getChunkData().length);
 										} 
 										catch (FileNotFoundException e) {
 											System.out.println("Error when we try to get file data");
@@ -310,7 +306,7 @@ public class Peer  {
 					try {
 						mcSocket_MDR_receive.receive(packet);
 						packetsReceived++;
-						
+
 						System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
 
@@ -384,7 +380,7 @@ public class Peer  {
 		mdr.start();
 
 	}	
-	
+
 	public synchronized void MergeTimer(int timeMls, String extensaoFile){
 		new Timer().schedule(new TimerTask() {          
 			@Override
@@ -417,5 +413,5 @@ public class Peer  {
 	public void setPacketsReceived(int packetsReceived) {
 		this.packetsReceived = packetsReceived;
 	}
-	
+
 }
