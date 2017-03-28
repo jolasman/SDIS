@@ -111,8 +111,8 @@ public class Peer  {
 											String aa = new String(filedata_msg);
 											System.out.println(aa);
 											Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
-											String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
-											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
+											byte[] message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
+											DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 											try {
 												Thread.sleep((long)(Math.random() * 400));
 											} catch (InterruptedException e1) {
@@ -216,8 +216,8 @@ public class Peer  {
 											chunkFile = (Chunk) file_data.readObject();
 											file_data.close();
 
-											String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg,extensao_msg, chunkFile.getChunkData());
-											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+											byte[] message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg,extensao_msg, chunkFile.getChunkData());
+											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 											try {
 												Thread.sleep((long)(Math.random() * 400));
 											}  catch (InterruptedException e1) {
@@ -256,8 +256,8 @@ public class Peer  {
 											chunkFile = (Chunk) file_data.readObject();
 											file_data.close();
 
-											String message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg,extensao_msg, chunkFile.getChunkData());
-											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR.getBytes() , message_to_MDR.getBytes().length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+											byte[] message_to_MDR = CreateMessage.MessageToSendChunk(version,senderID_msg , fileID_msg, chunkNo_msg,extensao_msg, chunkFile.getChunkData());
+											DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR, message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
 											mcSocket_to_MDR_Channel.send(msgDatagram_to_send_MDR);
 											System.out.println("\nPeer: " + peerID + " sending a CHUNK message to: \n" + Initiator.getMcastAddr_Channel_MDR() + " ----- " + Initiator.getMcastPORT_MDR_Channel() +
 													"\nbody length : " + chunkFile.getChunkData().length +
@@ -347,8 +347,8 @@ public class Peer  {
 									Chunk newChunk1 = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, 2);
 									Chunk.setChunksRestore(chunkNo_msg + "",newChunk1);
 
-									String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
-									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
+									byte[] message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
+									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 									System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
 									setChunkNoVerify(chunkNo_msg);
 									/*try {

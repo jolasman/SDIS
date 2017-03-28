@@ -199,10 +199,8 @@ public class Initiator {
 							e1.printStackTrace();
 						}
 						try{
-							String aa = new String(body);
-							System.out.println(aa);
-							String message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
-							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , mcastAddr, mcastPORT_MD_Channel);
+							byte[] message_to_Send = CreateMessage.MessageToSendPut(version, peerID, fileID, chunkNo, replication_degree, body);
+							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, mcastPORT_MD_Channel);
 							socket_backup.send(msgDatagram_to_send);
 							System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
 						}catch (Exception e){e.printStackTrace();}
@@ -245,8 +243,8 @@ public class Initiator {
 						char[] version = {'1','.','0'};
 						String extensao = fileName.substring(fileName.lastIndexOf("."), fileName.length());
 
-						String message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileHashName + chunkNO, chunkNO, extensao);
-						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
+						byte[] message_to_Send = CreateMessage.MessageToSendGetChunk(version, peerID, fileHashName + chunkNO, chunkNO, extensao);
+						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
 						TimeUnit.SECONDS.sleep(1);
 						socket_restore.send(msgDatagram_to_send);
 						
