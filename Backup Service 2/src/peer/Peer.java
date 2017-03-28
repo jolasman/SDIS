@@ -14,6 +14,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Handler;
 
 import algorithms.SHA256;
 import chunks.Chunk;
@@ -42,6 +45,10 @@ public class Peer  {
 	private String local_path = "./ChunksReceived";
 	private String local_path_getchunk = "./ChunksToRestore";
 	private int peerID;
+	private int chunkNoVerify;
+	private int packetsReceived;
+
+	
 
 	//como dar um peerID unico a cada um do sistema?
 	public Peer(int peerID) throws IOException{
@@ -290,17 +297,30 @@ public class Peer  {
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MDR();
 		//InetAddress hostAddr_MDR_Channel = InetAddress.getLocalHost();
 		mcSocket_MDR_receive.joinGroup(mcastAddr);
+
 		Thread mdr = new Thread(){
 			public void run(){
 				System.out.println("\nMc Data Recovery Channel Started...");
 				byte[] buffer = new byte[64800];
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				long start_time = System.currentTimeMillis();
-				long wait_time = 10000;
-				long end_time = start_time + wait_time;
-				while (System.currentTimeMillis() < end_time){
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);				
+				new Timer().schedule(new TimerTask() {          
+					@Override
+					public void run() {
+						if(getChunkNoVerify() == getPacketsReceived()){
+							try {
+								MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file");
+								Chunk.getChunksRestore().clear();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}   
+						}
+					}
+				}, 10000);
+				while(true){
 					try {
 						mcSocket_MDR_receive.receive(packet);
+						packetsReceived++;
 						System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
 
@@ -339,7 +359,7 @@ public class Peer  {
 									String message_to_Send = CreateMessage.MessageToSendStore(version,senderID_msg , fileID_msg, chunkNo_msg);
 									DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send.getBytes() , message_to_Send.getBytes().length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 									System.out.println("Peer: " + peerID + " stored chunk received in MC Data Recovery Channel");
-									String chunkFileNo = fileID_msg.substring(fileID_msg.length()-1);
+									setChunkNoVerify(chunkNo_msg);
 									/*try {
 										Thread.sleep((long)(Math.random() * 400));
 									} catch (InterruptedException e1) {
@@ -355,29 +375,20 @@ public class Peer  {
 										e.printStackTrace();
 									}*/
 								}
+
 							}
 						}
 						else{
 							System.out.println("\n Error: Mc Data Recovery Channel just accept CHUNK messages");
 						}
-					} 
+
+					}
 					catch (IOException e) {
 						System.out.println("\nError: Mc Data Recovery Channel when receiving in udp_receive_McSocket!\n");
 						e.printStackTrace();
 					}
 				}
-
-				//apos 10 segundos Merge dos CHunks recebidos
-					try {
-						MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file");
-						Chunk.getChunksRestore().clear();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				
 			};
-
 		};
 		mdr.start();
 
@@ -385,5 +396,17 @@ public class Peer  {
 
 	public int getPeerID() {
 		return peerID;
+	}
+	public int getChunkNoVerify() {
+		return chunkNoVerify;
+	}
+	public void setChunkNoVerify(int chunkNoVerify) {
+		this.chunkNoVerify = chunkNoVerify;
+	}
+	public int getPacketsReceived() {
+		return packetsReceived;
+	}
+	public void setPacketsReceived(int packetsReceived) {
+		this.packetsReceived = packetsReceived;
 	}
 }
