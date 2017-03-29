@@ -102,14 +102,14 @@ public class Peer  {
 									for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
 										if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
 											stored = true;
-											System.out.println("\nPeer " + peerID + " not store chunk. It's a chunk sent by him\n");
+											System.out.println("\nPeer " + getPeerID() + " not store chunk. It's a chunk sent by him\n");
 										}
 									}
 
 									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 										if(chunkIDtoCheck.equals(chunksalreadyReceived.get(i))){
 											received = true;
-											System.out.println("\nPeer " + peerID + " already have that chunk. Not Stored.\n");
+											System.out.println("\nPeer " + getPeerID() + " already have that chunk. Not Stored.\n");
 										}
 									}
 									if(!received){
@@ -126,7 +126,7 @@ public class Peer  {
 											try {
 
 												mcSocket_to_MC_Channel.send(msgDatagram_to_send);
-												System.out.println("\nMcData Channel send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
+												System.out.println("\nPeer : " + getPeerID() +" send a STORED message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
 											} catch (IOException e) {
 												System.out.println("\nError: McData Channel when trying to send de Stored message to: " + Initiator.getMcastAddr_Channel_MC() + " --- " + Initiator.getMcastPORT_MC_Channel());
 												e.printStackTrace();
@@ -171,10 +171,10 @@ public class Peer  {
 					public void run() {
 						if(!isReceiveone()){
 							try {
-								System.out.println("\nPeer : " + peerID + " Testing the option of reSend the Chunk files\n");
+								System.out.println("\nPeer : " + getPeerID() + " Testing the option of reSend the Chunk files\n");
 								ReenviaPut();
 							} catch (NoSuchAlgorithmException | IOException e) {
-								System.out.println("\nPeer : " + peerID + " do not receive any message");
+								System.out.println("\nPeer : " + getPeerID() + " do not receive any message");
 								e.printStackTrace();
 							} catch (InterruptedException e) {
 								// TODO Auto-generated catch block
@@ -182,28 +182,24 @@ public class Peer  {
 							}
 						}
 					}
-				}, 30000);
-				
-				if(packets < ((Initiator.getChunksforBackup() * Initiator.getReplicationDegree_backup())/2) //recebeu menos de metade
-						|| packets < (Initiator.getChunksforBackup() * Initiator.getReplicationDegree_backup())){ // recebeu menos do total
+				}, 10000);
+			
 					new Timer().schedule(new TimerTask() {          
 						@Override
 						public void run() {
-							if(!isMinimum()){
 								try {
-									System.out.println("\nPeer : " + peerID + " Testing the option of reSend the Chunk files. Just some amount of Stored Messages received\n");
+									System.out.println("\nPeer : " + getPeerID() + " Testing the option of reSend the Chunk files. Just some amount of Stored Messages received\n");
 									ReenviaPut();
 								} catch (NoSuchAlgorithmException | IOException e) {
-									System.out.println("\nPeer : " + peerID + " do not receive and can reSend");
+									System.out.println("\nPeer : " + getPeerID() + " do not receive and can reSend");
 									e.printStackTrace();
 								} catch (InterruptedException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}
-						}
-					}, 60000);
-				}
+						
+					}, 30000);
 
 
 				while(true){
@@ -229,15 +225,9 @@ public class Peer  {
 							if(packets == (Initiator.getChunksforBackup() * Initiator.getReplicationDegree_backup())){
 								ReenviaPut();
 								setMinimum(true);
-
 							}
-							
-
 							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
-							System.out.println("\nPeer : " + senderID_msg + 
-									" sended a stored msg. Information received and stored\n");
-
-
+							
 						}
 						else if(type_msg.equals("GETCHUNK")){
 							ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
@@ -432,7 +422,7 @@ public class Peer  {
 			System.out.println("\n Resending all chunks of file : " + Initiator.getFile_REAL_Name() + " with replication degree : " + Initiator.getReplicationDegree_backup() );
 			TimeUnit.SECONDS.sleep(1);
 			for (int j = 0; j < 25; ++j) System.out.println();
-			//Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
+			Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
 		}
 
 	}
