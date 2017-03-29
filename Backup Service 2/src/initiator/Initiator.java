@@ -58,6 +58,8 @@ public class Initiator {
 	private static int chunksforRestore;
 	private static int replicationDegree_restore;
 	private static boolean firstTimeRestore = true;
+	private static boolean backupMode;
+	private static boolean restoreMode;
 
 	@SuppressWarnings({ "unused", "resource" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
@@ -108,6 +110,7 @@ public class Initiator {
 			if(replication_degree_backup <= getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the backup of the file: " + file_backup);
 				BackupFileInitiator(file_backup,replication_degree_backup);
+				setBackupMode(true);
 			}else{
 				System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ getNUMBER_OF_PEERS());
 			}
@@ -130,6 +133,7 @@ public class Initiator {
 			if(getNUMBER_OF_PEERS() >= 1){
 				System.out.println("\nStarting the restore of the file: " + file_restore);
 				RestoreFiles(file_restore);
+				setRestoreMode(true);
 			}else{
 				System.out.println("\nYou need at least on Peer to restore! But you only have "+ getNUMBER_OF_PEERS());
 			}
@@ -765,5 +769,21 @@ public class Initiator {
 
 	public static void setFile_REAL_Name_Restore(String file_REAL_Name_Restore) {
 		Initiator.file_REAL_Name_Restore = file_REAL_Name_Restore;
+	}
+
+	public static boolean isBackupMode() {
+		return backupMode;
+	}
+
+	public static void setBackupMode(boolean backupMode) {
+		Initiator.backupMode = backupMode;
+	}
+
+	public static boolean isRestoreMode() {
+		return restoreMode;
+	}
+
+	public static void setRestoreMode(boolean restoreMode) {
+		Initiator.restoreMode = restoreMode;
 	}
 }
