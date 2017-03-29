@@ -8,6 +8,7 @@ import java.net.MulticastSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -201,23 +202,18 @@ public class Initiator {
 					int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
 					int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
 					byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
-					Thread initiator = new Thread(){
-						public void run(){
-							try {
-								Thread.sleep((long)(Math.random() * 1000));
-							}  catch (InterruptedException e1) {
-								System.out.println("\n Thread  Backup Initiator can not sleep");
-								e1.printStackTrace();
-							}
-							try{
-								byte[] message_to_Send = CreateMessage.MessageToSendPut(version, getPeerID(), fileID, chunkNo, replication_degree, body);
-								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, mcastPORT_MD_Channel);
-								socket_backup.send(msgDatagram_to_send);
-								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
-							}catch (Exception e){e.printStackTrace();}
-						}
-					};
-					initiator.start();
+					try{
+						byte[] message_to_Send = CreateMessage.MessageToSendPut(version, getPeerID(), fileID, chunkNo, replication_degree, body);
+						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, mcastPORT_MD_Channel);
+						socket_backup.send(msgDatagram_to_send);
+						System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
+					}catch (Exception e){e.printStackTrace();}
+					try {
+						Thread.sleep((long)(Math.random() * 400));
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 			else{}
@@ -234,23 +230,20 @@ public class Initiator {
 				int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
 				int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
 				byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
-				Thread initiator = new Thread(){
-					public void run(){
-						try {
-							Thread.sleep((long)(Math.random() * 1000));
-						}  catch (InterruptedException e1) {
-							System.out.println("\n Thread  Backup Initiator can not sleep");
-							e1.printStackTrace();
-						}
-						try{
-							byte[] message_to_Send = CreateMessage.MessageToSendPut(version, getPeerID(), fileID, chunkNo, replication_degree, body);
-							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, mcastPORT_MD_Channel);
-							socket_backup.send(msgDatagram_to_send);
-							System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
-						}catch (Exception e){e.printStackTrace();}
-					}
-				};
-				initiator.start();
+
+				try{
+					byte[] message_to_Send = CreateMessage.MessageToSendPut(version, getPeerID(), fileID, chunkNo, replication_degree, body);
+					DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, mcastPORT_MD_Channel);
+					socket_backup.send(msgDatagram_to_send);
+					System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
+				}catch (Exception e){e.printStackTrace();}
+				try {
+					Thread.sleep((long)(Math.random() * 400));
+				}  catch (InterruptedException e1) {
+					System.out.println("\n Thread  Backup Initiator can not sleep");
+					e1.printStackTrace();
+				}
+
 			}
 
 		}

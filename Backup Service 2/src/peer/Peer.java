@@ -167,10 +167,10 @@ public class Peer  {
 				setReceiveone(false);
 				setMinimum(false);
 				if(Initiator.getPeerID() == peerID){ // verifica se e o peer que pediu backup
-					new Timer().schedule(new TimerTask() {          
-						@Override
-						public void run() {
-							if(!isReceiveone()){
+					if(!isReceiveone()){
+						new Timer().schedule(new TimerTask() {          
+							@Override
+							public void run() {
 								try {
 									System.out.println("\nPeer : " + getPeerID() + " Testing the option of reSend the Chunk files\n");
 									ReenviaPut();
@@ -182,25 +182,25 @@ public class Peer  {
 									e.printStackTrace();
 								}
 							}
-						}
-					}, 10000);
-
-					new Timer().schedule(new TimerTask() {          
-						@Override
-						public void run() {
-							try {
-								System.out.println("\nPeer : " + getPeerID() + " Testing the option of reSend the Chunk files. Just some amount of Stored Messages received\n");
-								ReenviaPut();
-							} catch (NoSuchAlgorithmException | IOException e) {
-								System.out.println("\nPeer : " + getPeerID() + " do not receive and can reSend");
-								e.printStackTrace();
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+						}, 10000);
+					}
+					else{
+						new Timer().schedule(new TimerTask() {          
+							@Override
+							public void run() {
+								try {
+									System.out.println("\nPeer : " + getPeerID() + " Testing the option of reSend the Chunk files. Just some amount of Stored Messages received\n");
+									ReenviaPut();
+								} catch (NoSuchAlgorithmException | IOException e) {
+									System.out.println("\nPeer : " + getPeerID() + " do not receive and can reSend");
+									e.printStackTrace();
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
-						}
-
-					}, 30000);
+						}, 30000);
+					}
 				}
 
 				while(true){
@@ -410,7 +410,6 @@ public class Peer  {
 		}
 		if(reSend){
 			System.out.println("\n Resending all chunks of file : " + Initiator.getFile_REAL_Name() + " with replication degree : " + Initiator.getReplicationDegree_backup() );
-			TimeUnit.SECONDS.sleep(1);
 			System.out.println("chunks for backup " + Initiator.getChunksforBackup());
 			System.out.println("replication degree" + Initiator.getReplicationDegree_backup());
 			System.out.println("numero de CHunkID" + IDs.size());
@@ -418,7 +417,7 @@ public class Peer  {
 			Initiator.setFirstTimeBackup(false);
 			Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
 		}
-		 
+
 	}
 
 
