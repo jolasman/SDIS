@@ -46,13 +46,18 @@ public class Initiator {
 	private static int peerID;
 	private static int filesNo;
 	private static String file_Hash_Name;
+	private static String file_Hash_Name_Restore;
 	private static String file_REAL_Name;
+	private static String file_REAL_Name_Restore;
 	private static int NUMBER_OF_PEERS;
 	private static int activePeers;
 	private static String extensao;
 	private static int chunksforBackup;
 	private static int replicationDegree_backup;
 	private static boolean firstTimeBackup = true;
+	private static int chunksforRestore;
+	private static int replicationDegree_restore;
+	private static boolean firstTimeRestore = true;
 
 	@SuppressWarnings({ "unused", "resource" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
@@ -122,11 +127,11 @@ public class Initiator {
 			//print funny loading text
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
-			if(replication_degree_restore <= getNUMBER_OF_PEERS()){
+			if(getNUMBER_OF_PEERS() >= 1){
 				System.out.println("\nStarting the restore of the file: " + file_restore);
-				RestoreFiles(file_restore,replication_degree_restore );
+				RestoreFiles(file_restore);
 			}else{
-				System.out.println("\nYou need "+ replication_degree_restore +" Peers to restore! But you only have "+ getNUMBER_OF_PEERS());
+				System.out.println("\nYou need at least on Peer to restore! But you only have "+ getNUMBER_OF_PEERS());
 			}
 
 			break;
@@ -252,7 +257,7 @@ public class Initiator {
 
 	}
 
-	public synchronized static void RestoreFiles(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
+	public synchronized static void RestoreFiles(String fileName) throws IOException, NoSuchAlgorithmException{
 		socket_restore = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
 
 		File file_restore_stored = new File("./Chunks");
@@ -269,14 +274,13 @@ public class Initiator {
 				DatabaseChunksStored.StoreChunkID(arquivos.getName());
 			}
 		}
+		
 		File fileArgs = new File("./Files/" + fileName); 
 		ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 		boolean haveChunk= true;
 		String fileHashName = SHA256.ToSha256(fileArgs);
-		setFile_Hash_Name(fileHashName);
-		setFile_REAL_Name(fileName);
-		String extensao = fileName.substring(fileName.lastIndexOf("."), fileName.length());
-		setExtensao(extensao);
+		setFile_Hash_Name_Restore(fileHashName);
+		setFile_REAL_Name_Restore(fileName);
 		int chunkNO = 1;		
 		do{
 			String chunkIDtoCheck = fileHashName + chunkNO;
@@ -310,6 +314,9 @@ public class Initiator {
 
 
 		socket_restore.close();
+		if(isFirstTimeRestore()){
+			setChunksforRestore(chunkNO);
+		}
 
 	}
 
@@ -718,5 +725,45 @@ public class Initiator {
 
 	public static void setFirstTimeBackup(boolean firstTimeBackup) {
 		Initiator.firstTimeBackup = firstTimeBackup;
+	}
+
+	public static int getChunksforRestore() {
+		return chunksforRestore;
+	}
+
+	public static void setChunksforRestore(int chunksforRestore) {
+		Initiator.chunksforRestore = chunksforRestore;
+	}
+
+	public static int getReplicationDegree_restore() {
+		return replicationDegree_restore;
+	}
+
+	public static void setReplicationDegree_restore(int replicationDegree_restore) {
+		Initiator.replicationDegree_restore = replicationDegree_restore;
+	}
+
+	public static boolean isFirstTimeRestore() {
+		return firstTimeRestore;
+	}
+
+	public static void setFirstTimeRestore(boolean firstTimeRestore) {
+		Initiator.firstTimeRestore = firstTimeRestore;
+	}
+
+	public static String getFile_Hash_Name_Restore() {
+		return file_Hash_Name_Restore;
+	}
+
+	public static void setFile_Hash_Name_Restore(String file_Hash_Name_Restore) {
+		Initiator.file_Hash_Name_Restore = file_Hash_Name_Restore;
+	}
+
+	public static String getFile_REAL_Name_Restore() {
+		return file_REAL_Name_Restore;
+	}
+
+	public static void setFile_REAL_Name_Restore(String file_REAL_Name_Restore) {
+		Initiator.file_REAL_Name_Restore = file_REAL_Name_Restore;
 	}
 }

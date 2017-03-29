@@ -4,17 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseChunksReceived {
-
-	private static HashMap<String, Integer> chunksReceivedInfo = new HashMap<String, Integer>();
 	private static ArrayList<String> receivedChunksID = new ArrayList<String>();
-
-	public static void StoreReceivedChunkID_Sender(String chunkID, Integer senderID){
-		chunksReceivedInfo.put(chunkID, senderID);
-	}
-
-	public static Map<String, Integer> getRecievedChunkID_Sender(){
-		return chunksReceivedInfo;
-	}
+	private static ArrayList<String> receivedChunksIDFromCHUNK = new ArrayList<String>();
+	
 
 	public static ArrayList<String> getReceivedChunksID() {
 		return receivedChunksID;
@@ -22,6 +14,14 @@ public class DatabaseChunksReceived {
 
 	public static void setReceivedChunksID(String chunkID) {
 		receivedChunksID.add(chunkID);
+	}
+
+	public static ArrayList<String> getReceivedChunksIDFromCHUNK() {
+		return receivedChunksIDFromCHUNK;
+	}
+
+	public static void setReceivedChunksIDFromCHUNK(String chunkID_) {
+		receivedChunksIDFromCHUNK.add(chunkID_);
 	}
 }
 
