@@ -38,7 +38,6 @@ public class FileToCkunk {
 
 				//Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree);
 				Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree, "./Chunks");
-				newChunkObject.setChunksCreated(newChunkObject);
 				DatabaseChunksStored.StoreChunkID(fileID + partCounter);
 				partCounter++;
 			}
