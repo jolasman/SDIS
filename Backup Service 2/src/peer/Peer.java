@@ -51,7 +51,8 @@ public class Peer  {
 	private int chunkNoVerify;
 	private int packetsReceived;
 	private int senderPeerID;
-
+	private boolean minimum;
+	private boolean receiveone;
 
 
 	//como dar um peerID unico a cada um do sistema?
@@ -163,16 +164,55 @@ public class Peer  {
 				byte[] buffer = new byte[64800];
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				int packets = 0;
+				setReceiveone(false);
+				setMinimum(false);
+				new Timer().schedule(new TimerTask() {          
+					@Override
+					public void run() {
+						if(!isReceiveone()){
+							try {
+								System.out.println("\nPeer : " + peerID + " Testing the option of reSend the Chunk files\n");
+								ReenviaPut();
+							} catch (NoSuchAlgorithmException | IOException e) {
+								System.out.println("\nPeer : " + peerID + " do not receive any message");
+								e.printStackTrace();
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}
+				}, 30000);
+				
+				if(packets < ((Initiator.getChunksforBackup() * Initiator.getReplicationDegree_backup())/2) //recebeu menos de metade
+						|| packets < (Initiator.getChunksforBackup() * Initiator.getReplicationDegree_backup())){ // recebeu menos do total
+					new Timer().schedule(new TimerTask() {          
+						@Override
+						public void run() {
+							if(!isMinimum()){
+								try {
+									System.out.println("\nPeer : " + peerID + " Testing the option of reSend the Chunk files. Just some amount of Stored Messages received\n");
+									ReenviaPut();
+								} catch (NoSuchAlgorithmException | IOException e) {
+									System.out.println("\nPeer : " + peerID + " do not receive and can reSend");
+									e.printStackTrace();
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+						}
+					}, 60000);
+				}
+
+
 				while(true){
 					try {
 						mcSocket_MC_Channel.receive(packet);
 						System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
-
-						String aa = new String(msg_received);
-						System.out.println("\n mensagem recebida no MC : " + aa);
-
-
+						//String aa = new String(msg_received);
+						//System.out.println("\n mensagem recebida no MC : " + aa);
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 						int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 						String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
@@ -181,31 +221,18 @@ public class Peer  {
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg;
-
-
-
-						System.out.println("\n type: " + type_msg );
-
-
+						//System.out.println("\n type: " + type_msg );
 						if(type_msg.equals("STORED")){
-
+							setReceiveone(true);
 							packets++;
 
-							if(packets == 1){
-								new Timer().schedule(new TimerTask() {          
-									@Override
-									public void run() {
-										try {
-											ReenviaPut();
-										} catch (NoSuchAlgorithmException | IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-									}
-								}, 10000);
-							}
+							if(packets == (Initiator.getChunksforBackup() * Initiator.getReplicationDegree_backup())){
+								ReenviaPut();
+								setMinimum(true);
 
-							//DatabaseChunksReceived.StoreReceivedChunkID_Sender(fileID_msg + chunkNo_msg, senderID_msg);
+							}
+							
+
 							DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
 							System.out.println("\nPeer : " + senderID_msg + 
 									" sended a stored msg. Information received and stored\n");
@@ -279,6 +306,12 @@ public class Peer  {
 					} 
 					catch (IOException e) {
 						System.out.println("\nError: Mc Control Channel when receiving in mcSocket_MC_Channel!\n");
+						e.printStackTrace();
+					} catch (NoSuchAlgorithmException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -365,13 +398,14 @@ public class Peer  {
 
 	}
 
-	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException{
+	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException, InterruptedException{
 		ArrayList<String> IDs = DatabaseChunksReceived.getReceivedChunksID();
 		ArrayList<Integer> chunks = new ArrayList<Integer>(Initiator.getChunksforBackup());
+		boolean reSend = false;
 		for (int i = 0; i < Initiator.getChunksforBackup() +1; i++) {
 			chunks.add(0);
 		}
-		if(Initiator.getPeerID() == peerID){
+		if(Initiator.getPeerID() == peerID){ // verifica se e o peer que pediu backup
 			for(int i = 0; i < Initiator.getChunksforBackup(); i++){ // por cada chunk 
 				int count = 0;
 				for(int j = 0; j < IDs.size(); j++){// por cada message Stored de um chunkID
@@ -387,14 +421,19 @@ public class Peer  {
 
 		for(int i = 0; i < Initiator.getChunksforBackup(); i++){
 			if(chunks.get(i) >= Initiator.getReplicationDegree_backup()){
-				System.out.println("\n Numero de chunksNo :" + (i+1) + " received : " + chunks.get(i));
+				System.out.println("\n Numero de chunksNo :" + (i+1) + " Enough Stored Messages received : " + chunks.get(i));
 			}
 			else {
-				System.out.println("\n Numero de chunksNo :" + (i+1) + " --- : " + chunks.get(i));
-				//Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
+				System.out.println("\n Numero de chunksNo :" + (i+1) + " lower than the replication degree : " + chunks.get(i));
+				reSend = true;
 			}
 		}
-
+		if(reSend){
+			System.out.println("\n Resending all chunks of file : " + Initiator.getFile_REAL_Name() + " with replication degree : " + Initiator.getReplicationDegree_backup() );
+			TimeUnit.SECONDS.sleep(1);
+			for (int j = 0; j < 25; ++j) System.out.println();
+			//Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), Initiator.getReplicationDegree_backup());
+		}
 
 	}
 
@@ -419,6 +458,18 @@ public class Peer  {
 	}
 	public void setSenderPeerID(int senderPeerID) {
 		this.senderPeerID = senderPeerID;
+	}
+	public boolean isMinimum() {
+		return minimum;
+	}
+	public void setMinimum(boolean minimum) {
+		this.minimum = minimum;
+	}
+	public boolean isReceiveone() {
+		return receiveone;
+	}
+	public void setReceiveone(boolean receiveone) {
+		this.receiveone = receiveone;
 	}
 
 }

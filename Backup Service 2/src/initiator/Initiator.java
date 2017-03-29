@@ -98,7 +98,7 @@ public class Initiator {
 			//print funny loading text
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
-			if(replication_degree_backup < getNUMBER_OF_PEERS()){
+			if(replication_degree_backup <= getNUMBER_OF_PEERS()){
 				System.out.println("\nStarting the backup of the file: " + file_backup);
 				BackupFileInitiator(file_backup,replication_degree_backup);
 			}else{
@@ -164,10 +164,10 @@ public class Initiator {
 
 	//backup
 	public synchronized static void BackupFileInitiator(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
-		
 		File fileArgs = new File("./Files/" + fileName); 
 		String fileHashName = SHA256.ToSha256(fileArgs);
 		setFile_Hash_Name(fileHashName);
+		setFile_REAL_Name(fileName);
 		
 		DatabasePeerID.StorePeerID(getPeerID());
 		File file = new File("./ChunksReceived");
@@ -202,7 +202,7 @@ public class Initiator {
 				Thread initiator = new Thread(){
 					public void run(){
 						try {
-							Thread.sleep((long)(Math.random() * 400));
+							Thread.sleep((long)(Math.random() * 1000));
 						}  catch (InterruptedException e1) {
 							System.out.println("\n Thread  Backup Initiator can not sleep");
 							e1.printStackTrace();
