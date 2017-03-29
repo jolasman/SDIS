@@ -51,6 +51,7 @@ public class Initiator {
 	private static String extensao;
 	private static int chunksforBackup;
 	private static int replicationDegree_backup;
+	private static boolean firstTimeBackup = true;
 
 	@SuppressWarnings({ "unused", "resource" })
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
@@ -168,7 +169,7 @@ public class Initiator {
 		String fileHashName = SHA256.ToSha256(fileArgs);
 		setFile_Hash_Name(fileHashName);
 		setFile_REAL_Name(fileName);
-		
+
 		DatabasePeerID.StorePeerID(getPeerID());
 		File file = new File("./ChunksReceived");
 		if(file.listFiles() == null){ 
@@ -183,16 +184,50 @@ public class Initiator {
 				DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
 			}
 		}
-		Peer newPeer = new Peer(getPeerID());
+		if(isFirstTimeBackup()){
+			Peer newPeer = new Peer(getPeerID());
 
-		FileManager files = new FileManager(fileName, repl_degree);
-		if(files.isHaveFiles()){
+			FileManager files = new FileManager(fileName, repl_degree);
+			if(files.isHaveFiles()){
+				InetAddress mcastAddr = mcastAddr_Channel_MD;
+				socket_backup = new MulticastSocket(mcastPORT_MD_Channel);
+				socket_backup.joinGroup(mcastAddr);
+				socket_backup.setTimeToLive(1);
+
+				setChunksforBackup(DatabaseChunksStored.getChunkIDStored().size());
+
+				for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
+					String fileID = Chunk.getChunksCreated().get(i).getFileID();
+					int chunkNo = Chunk.getChunksCreated().get(i).getChunkNo();
+					int replication_degree = Chunk.getChunksCreated().get(i).getReplication_degree();
+					byte[] body = Chunk.getChunksCreated().get(i).getChunkData();
+					Thread initiator = new Thread(){
+						public void run(){
+							try {
+								Thread.sleep((long)(Math.random() * 1000));
+							}  catch (InterruptedException e1) {
+								System.out.println("\n Thread  Backup Initiator can not sleep");
+								e1.printStackTrace();
+							}
+							try{
+								byte[] message_to_Send = CreateMessage.MessageToSendPut(version, getPeerID(), fileID, chunkNo, replication_degree, body);
+								DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, mcastPORT_MD_Channel);
+								socket_backup.send(msgDatagram_to_send);
+								System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + mcastPORT_MD_Channel);
+							}catch (Exception e){e.printStackTrace();}
+						}
+					};
+					initiator.start();
+				}
+			}
+			else{}
+		}
+		else if(!isFirstTimeBackup()){
+			Peer newPeer = new Peer(getPeerID());
 			InetAddress mcastAddr = mcastAddr_Channel_MD;
 			socket_backup = new MulticastSocket(mcastPORT_MD_Channel);
 			socket_backup.joinGroup(mcastAddr);
 			socket_backup.setTimeToLive(1);
-
-			setChunksforBackup(DatabaseChunksStored.getChunkIDStored().size());
 
 			for(int i = 0; i< Chunk.getChunksCreated().size(); i++){
 				String fileID = Chunk.getChunksCreated().get(i).getFileID();
@@ -217,8 +252,11 @@ public class Initiator {
 				};
 				initiator.start();
 			}
+
 		}
-		else{}
+
+
+
 	}
 
 	public synchronized static void RestoreFiles(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
@@ -679,5 +717,13 @@ public class Initiator {
 
 	public static void setReplicationDegree_backup(int replicationDegree_backup) {
 		Initiator.replicationDegree_backup = replicationDegree_backup;
+	}
+
+	public static boolean isFirstTimeBackup() {
+		return firstTimeBackup;
+	}
+
+	public static void setFirstTimeBackup(boolean firstTimeBackup) {
+		Initiator.firstTimeBackup = firstTimeBackup;
 	}
 }
