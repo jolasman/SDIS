@@ -206,6 +206,7 @@ public class Peer  {
 						switch(type_msg){
 
 						case "STORED":
+							System.out.println("A STORED Message received in MC Channel");
 							setReceiveone(true);
 							int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 							if(senderID_msg == Initiator.getPeerID()){
@@ -215,6 +216,7 @@ public class Peer  {
 							}
 
 						case "GETCHUNK":
+							System.out.println("A GETCHUNK Message received in MC Channel");
 							setReceiveone(true);
 							setGetChunkMessage(true);
 							int chunkNo_msgget = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
@@ -271,11 +273,13 @@ public class Peer  {
 							break;
 
 						case "DELETE":
+							System.out.println("A DELETE Message received in MC Channel");
 							if(senderID_msg == Initiator.getPeerID()){}
 							else{
 								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 								boolean haveChunk = true;
 								int chunkNO = 1;
+								int size = chunksalreadyReceived.size();
 								do{
 									String toCheck = fileID_msg + chunkNO;
 									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
@@ -291,7 +295,7 @@ public class Peer  {
 											}catch(Exception e){e.printStackTrace();}
 											DatabaseChunksReceived.getReceivedChunksID().remove(i);
 										}else{
-											if(i == chunksalreadyReceived.size() ){
+											if(i == size ){
 												haveChunk = false;
 												System.out.println("\n\nAll Chunks DELETED! --> Peer : " + getPeerID() +"\n\n");
 											}
