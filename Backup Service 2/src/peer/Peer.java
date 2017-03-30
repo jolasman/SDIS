@@ -280,28 +280,23 @@ public class Peer  {
 								boolean haveChunk = true;
 								int chunkNO = 1;
 								int size = chunksalreadyReceived.size();
-								do{
-									String toCheck = fileID_msg + chunkNO;
-									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
-										if(toCheck.equals(chunksalreadyReceived.get(i))){
-											chunkNO++;
-											try{
-												File file = new File("./ChunksReceived/" + toCheck);
-												if(file.delete()){
-													System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
-												}else{
-													System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
-												}
-											}catch(Exception e){e.printStackTrace();}
-											DatabaseChunksReceived.getReceivedChunksID().remove(i);
-										}else{
-											if(i == size ){
-												haveChunk = false;
-												System.out.println("\n\nAll Chunks DELETED! --> Peer : " + getPeerID() +"\n\n");
+
+								String toCheck = fileID_msg + chunkNO;
+								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+									if(toCheck.equals(chunksalreadyReceived.get(i))){
+										chunkNO++;
+										try{
+											File file = new File("./ChunksReceived/" + toCheck);
+											if(file.delete()){
+												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
+											}else{
+												System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
 											}
-										}
-									}			
-								}while(haveChunk);
+										}catch(Exception e){e.printStackTrace();}
+										DatabaseChunksReceived.getReceivedChunksID().remove(i);
+									}else{}
+								}
+								System.out.println("\n\nAll Chunks DELETED! --> Peer : " + getPeerID() +"\n\n");
 							}
 							break;
 
