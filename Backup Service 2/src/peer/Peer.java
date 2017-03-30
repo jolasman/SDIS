@@ -122,6 +122,7 @@ public class Peer  {
 								if(!received){
 									if(!stored){
 										Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
+										DatabaseChunksReceived.setReceivedChunksID(fileID_msg + chunkNo_msg);
 										byte[] message_to_Send = CreateMessage.MessageToSendStore(version,getPeerID() , fileID_msg, chunkNo_msg);
 										DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 										try {
@@ -194,8 +195,6 @@ public class Peer  {
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
 						//String aa = new String(msg_received);
 						//System.out.println("\n mensagem recebida no MC : " + aa);
-
-
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 						String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
 						char[] version = MessageManager.SeparateMsgContentStored(msg_received).getVersion();
@@ -276,12 +275,27 @@ public class Peer  {
 							System.out.println("A DELETE Message received in MC Channel");
 							if(senderID_msg == Initiator.getPeerID()){}
 							else{
+								
+								ArrayList<String> chunksalreadyReceived = new ArrayList<String>();
+								File file1 = new File("./ChunksReceived");
+								if(file1.listFiles() == null){ 
+									System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + getPeerID() );
+								}
+								else{
+									File afile[] = file1.listFiles();
+									int i = 0;
+									for (int j = afile.length; i < j; i++) {
+										File arquivos = afile[i];
+										System.out.println("Peer : " + getPeerID() + " Load chunks received: " + arquivos.getName());
+										chunksalreadyReceived.add(arquivos.getName());
+									}
+								}
+														
 								System.out.println("A DELETE");
 								boolean haveChunk = true;
 								int chunkNO = 1;
-								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+								
 								int size = chunksalreadyReceived.size();
-
 
 								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 									do{
