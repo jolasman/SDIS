@@ -279,15 +279,16 @@ public class Peer  {
 								System.out.println("A DELETE");
 								boolean haveChunk = true;
 								int chunkNO = 1;
-								do{
-									ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
-									int size = chunksalreadyReceived.size();
-									String toCheck = fileID_msg + chunkNO;
-									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+								int size = chunksalreadyReceived.size();
+
+
+								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+									do{
+										String toCheck = fileID_msg + chunkNO;
 										System.out.println("\n to check : " + toCheck);
 										System.out.println("\n to received : " + chunksalreadyReceived.get(i));
 										if(toCheck.equals(chunksalreadyReceived.get(i))){
-											chunkNO++;
 											try{
 												File file = new File("./ChunksReceived/" + toCheck);
 												if(file.delete()){
@@ -297,14 +298,16 @@ public class Peer  {
 												}
 											}catch(Exception e){e.printStackTrace();}
 											DatabaseChunksReceived.getReceivedChunksID().remove(i);
+											chunkNO++;
+											haveChunk = false;
 										}else{
-											if(i == size){
-												haveChunk = false;
-											}
+											chunkNO++;
+											haveChunk = false;
 										}
-									}
 
-								}while(haveChunk);
+									}while(haveChunk);
+								}
+
 							}
 							break;
 
