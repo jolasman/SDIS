@@ -307,6 +307,7 @@ public class Peer  {
 
 									}while(haveChunk);
 								}
+								System.out.println("\n\nDelete Chunks Done\n\n");
 
 							}
 							break;
