@@ -283,8 +283,11 @@ public class Peer  {
 
 								String toCheck = fileID_msg + chunkNO;
 								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+									System.out.println("\n to check : " + toCheck);
+									System.out.println("\n to received : " + chunksalreadyReceived.get(i));
 									if(toCheck.equals(chunksalreadyReceived.get(i))){
 										chunkNO++;
+										
 										try{
 											File file = new File("./ChunksReceived/" + toCheck);
 											if(file.delete()){
@@ -296,7 +299,6 @@ public class Peer  {
 										DatabaseChunksReceived.getReceivedChunksID().remove(i);
 									}else{}
 								}
-								System.out.println("\n\nAll Chunks DELETED! --> Peer : " + getPeerID() +"\n\n");
 							}
 							break;
 
