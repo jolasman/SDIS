@@ -196,7 +196,7 @@ public class Peer  {
 					try {
 						mcSocket_MC_Channel.receive(packet);
 						System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
+						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());	//msg recebida	//msg recebida
 						//String aa = new String(msg_received);
 						//System.out.println("\n mensagem recebida no MC : " + aa);
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
@@ -377,7 +377,7 @@ public class Peer  {
 						}
 
 						System.out.println("\nMc Data Recovery received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida
+						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());	//msg recebida
 
 						String fileID_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getFileID();
 						int chunkNo_msg = MessageManager.SeparateMsgContentCHUNK(msg_received).getChunkNo();
