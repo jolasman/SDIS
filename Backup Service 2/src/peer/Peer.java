@@ -86,9 +86,8 @@ public class Peer  {
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					try {
 						mcSocket_receive.receive(packet);
-
 						System.out.println("\nMcData Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
-						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
+						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());	//msg recebida	//msg recebida
 
 						String fileID_msg = MessageManager.SeparateMsgContent(msg_received).getFileID();
 						int chunkNo_msg = MessageManager.SeparateMsgContent(msg_received).getChunkNo();
@@ -100,7 +99,10 @@ public class Peer  {
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg+chunkNo_msg;
-
+						System.out.println("\nFile ID : " + fileID_msg);
+						System.out.println("chunkNo_msg : " + chunkNo_msg);
+						System.out.println("\repl_degree_msg : " + repl_degree_msg);
+						System.out.println("type_msg : " + type_msg);
 						if(senderID_msg == Initiator.getPeerID()){
 							//se for msg dele proprio nao faz nada
 						}else{
@@ -294,7 +296,7 @@ public class Peer  {
 								}
 
 								System.out.println("A DELETE");
-								
+
 								int size = chunksalreadyReceived.size();
 
 								Set<String> foo = new HashSet<String>();
@@ -412,7 +414,8 @@ public class Peer  {
 
 	}
 
-	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException, InterruptedException{
+	
+public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException, InterruptedException{
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MD();
 		MulticastSocket socket_backup_reenvia = new MulticastSocket(Initiator.getMcastPORT_MD_Channel());
 		ArrayList<String> IDs = DatabaseChunksReceived.getReceivedChunksID();

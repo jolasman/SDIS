@@ -108,14 +108,14 @@ public class Initiator {
 			ReceiveKnowPeersActive();
 			AlwaysSendingActvite();
 			//print funny loading text
-			ReceivePeersConsole();
+			//ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
-			if(replication_degree_backup <= (getNUMBER_OF_PEERS()-1) ){ // por <=
-				System.out.println("\nStarting the backup of the file: " + file_backup);
+			//if(replication_degree_backup <= (getNUMBER_OF_PEERS()-1) ){ // por <=
+				//System.out.println("\nStarting the backup of the file: " + file_backup);
 				BackupFileInitiator(file_backup,replication_degree_backup);
-			}else{
-				System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ (getNUMBER_OF_PEERS()-1) );
-			}
+		//	}else{
+			//	System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ (getNUMBER_OF_PEERS()-1) );
+			//}
 			break;
 		case 2: //restore
 			Scanner resp_restore = new Scanner(System.in);

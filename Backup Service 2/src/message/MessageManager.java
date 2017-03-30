@@ -18,29 +18,38 @@ public class MessageManager {
 	public static synchronized SeparatedMessage SeparateMsgContent(byte[] msg){
 
 		byte[] original = msg;
-		byte[] header_byte = new byte[800];
-		byte[] body = new byte[MAX_BYTES];
 		int index_body_begin = 0;
-		
-		if(original.length > 64000){
-			for (int i = 0; i < original.length; i++){
-				if (original[i] == (byte) '\r'){
-					if (i + 1 < original.length && original[i+1] == (byte) '\n' &&
-							i + 2 < original.length && original[i+2] == (byte) '\r' &&
-							i + 3 < original.length && original[i+3] == (byte) '\n'){
+		SeparatedMessage msgSeparated = null;
+		for (int i = 0; i < original.length; i++){
+			if (original[i] == (byte) '\r'){
+				if (i + 1 < original.length && original[i+1] == (byte) '\n' &&
+						i + 2 < original.length && original[i+2] == (byte) '\r' &&
+						i + 3 < original.length && original[i+3] == (byte) '\n'){
 
-						index_body_begin = i+4;				
-						System.arraycopy(original, 0, header_byte,0, i-1);
-						System.arraycopy(original, index_body_begin, body, 0, MAX_BYTES);
-						break;
-					}
+					index_body_begin = i+4;	
+
+					byte[] header_byte = new byte[i-1];
+					byte[] cenas = new byte[i+4];
+					System.arraycopy(original, 0, header_byte,0, i-1);
+					String header = new String (header_byte);
+					String coisas = new String (cenas);
+					System.out.println("\n\n original size : " + original.length);
+					System.out.println("\n\n header size : " + header.getBytes().length);
+					System.out.println("\n\n coisas size : " + coisas.getBytes().length);
+
+					System.out.println("\n\n body size : " + (original.length - (i+4)));
+					byte[] body = new byte[(original.length - (i+4))];
+					System.arraycopy(original, coisas.length(), body, 0, body.length );
+
+					msgSeparated = new SeparatedMessage(header, body);
+					System.out.println("\n\ntamanho body: " + body.length);
+					System.out.println("tamanho header: " + header_byte.length);
+					System.out.println("tamanho original: " + original.length + "\n\n\n");
+					break;
 				}
-				else{}
 			}
+			else{}
 		}
-
-		String header = new String (header_byte);		
-		SeparatedMessage msgSeparated = new SeparatedMessage(header, body);	
 		return msgSeparated;
 	}
 
@@ -65,7 +74,7 @@ public class MessageManager {
 		SeparatedMessage msgSeparated = new SeparatedMessage(stored);	
 		return msgSeparated;
 	}
-	
+
 	/*public static synchronized SeparatedMessage SeparateMsgContentGETCHUNK(byte[] msg){
 		byte[] original = msg;
 		byte[] header_byte = new byte[800];
@@ -91,31 +100,42 @@ public class MessageManager {
 	public static synchronized SeparatedMessage SeparateMsgContentCHUNK(byte[] msg){
 
 		byte[] original = msg;
-		byte[] header_byte = new byte[800];
-		byte[] body = new byte[MAX_BYTES];
 		int index_body_begin = 0;
+		SeparatedMessage msgSeparated = null;
+		for (int i = 0; i < original.length; i++){
+			if (original[i] == (byte) '\r'){
+				if (i + 1 < original.length && original[i+1] == (byte) '\n' &&
+						i + 2 < original.length && original[i+2] == (byte) '\r' &&
+						i + 3 < original.length && original[i+3] == (byte) '\n'){
 
-		if(original.length > 64000){
-			for (int i = 0; i < original.length; i++){
-				if (original[i] == (byte) '\r'){
-					if (i + 1 < original.length && original[i+1] == (byte) '\n' &&
-							i + 2 < original.length && original[i+2] == (byte) '\r' &&
-							i + 3 < original.length && original[i+3] == (byte) '\n'){
+					index_body_begin = i+4;	
 
-						index_body_begin = i+4;				
-						System.arraycopy(original, 0, header_byte,0, i-1);
-						System.arraycopy(original, index_body_begin, body, 0, MAX_BYTES);
-						break;
-					}
+					byte[] header_byte = new byte[i-1];
+					byte[] cenas = new byte[i+4];
+					System.arraycopy(original, 0, header_byte,0, i-1);
+					String header = new String (header_byte);
+					String coisas = new String (cenas);
+					System.out.println("\n\n original size : " + original.length);
+					System.out.println("\n\n header size : " + header.getBytes().length);
+					System.out.println("\n\n coisas size : " + coisas.getBytes().length);
+
+					System.out.println("\n\n body size : " + (original.length - (i+4)));
+					byte[] body = new byte[(original.length - (i+4))];
+					System.arraycopy(original, coisas.length(), body, 0, body.length );
+
+					msgSeparated = new SeparatedMessage(header, body, "CHUNK");	
+					System.out.println("\n\ntamanho body: " + body.length);
+					System.out.println("tamanho header: " + header_byte.length);
+					System.out.println("tamanho original: " + original.length + "\n\n\n");
+					break;
 				}
-				else{}
 			}
+			else{}
 		}
-		String header = new String (header_byte);
-		SeparatedMessage msgSeparated = new SeparatedMessage(header, body, "CHUNK");	
 		return msgSeparated;
+
 	}
-	
+
 	public static synchronized SeparatedMessage SeparateMsgContentDelete(byte[] msg){
 
 		byte[] original = msg;

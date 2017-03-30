@@ -6,8 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import algorithms.SHA256;
 import chunks.Chunk;
@@ -26,28 +30,30 @@ public class FileToCkunk {
 	}
 
 	public void MakeChunks(File file,String type, int replication_degree) throws IOException{
-		int partCounter = 1;	
-		byte[] buffer = new byte[sizeOfFiles];
-
+		int chunkNo = 1;	
 		fileID = SHA256.ToSha256(file); 
-
-		try (BufferedInputStream file_data = new BufferedInputStream(new FileInputStream(file))) {
-			int tmp = 0;
-
-			while ((tmp = file_data.read(buffer)) > 0) { //create each chunk while file have some bytes with data
-
-				//Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree);
-				Chunk newChunkObject = new Chunk(fileID, partCounter, buffer, replication_degree, "./Chunks");
-				DatabaseChunksStored.StoreChunkID(fileID + partCounter);
-				partCounter++;
+		Path path = Paths.get(file.getPath());
+		byte[] fileData = Files.readAllBytes(path);
+		
+		for(int i = 0; i < fileData.length; i+=sizeOfFiles){
+			if(fileData.length < (i+sizeOfFiles)){// ultimo chunk é menor que os 64000
+				int lengthLastChunk = fileData.length -i;
+				Chunk newChunkObject = new Chunk(fileID, chunkNo, Arrays.copyOfRange(fileData,i,(i+lengthLastChunk)), replication_degree, "./Chunks");
+				DatabaseChunksStored.StoreChunkID(fileID + chunkNo);
+				
+			}		
+			else if(fileData.length > (i+sizeOfFiles)){// ultimo chunk é menor que os 64000
+				Chunk newChunkObject = new Chunk(fileID, chunkNo, Arrays.copyOfRange(fileData,i, (i+sizeOfFiles)), replication_degree, "./Chunks");
+				DatabaseChunksStored.StoreChunkID(fileID + chunkNo);
 			}
-
-		} 
-		catch (FileNotFoundException e) {
-			System.out.println("Error when we try to get file data");
-			e.printStackTrace();
-
+			else{
+				Chunk newChunkObject = new Chunk(fileID, chunkNo, new byte[0], replication_degree, "./Chunks");
+				DatabaseChunksStored.StoreChunkID(fileID + chunkNo);
+			}
+			chunkNo++;
 		}
+		
+			
 	}
 
 	public String getFileID(){
