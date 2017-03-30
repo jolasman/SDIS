@@ -185,8 +185,11 @@ public class Initiator {
 			if(time > 300){
 				setTimetoBackup(100000);
 			}
-			if(time <= 30){
+			if(time <= 30 && time > 10){
 				setTimetoBackup(35000);
+			}
+			if(time <= 10){
+				setTimetoBackup(15000);
 			}
 			if(time > 30 && time <= 100){
 				setTimetoBackup(45000);
@@ -249,7 +252,7 @@ public class Initiator {
 
 		}
 		else{
-			System.out.println("file doesn't exist in the folder : Files");
+			System.out.println("\n\nFile doesn't exist in the Files Directory\n\n");
 		}
 	}
 	// restore
@@ -268,7 +271,7 @@ public class Initiator {
 			if(time > 300){
 				setTimetoRestore(150000);
 			}
-			if(time <= 30){
+			if(time <= 30 && time > 10){
 				setTimetoRestore(35000);
 			}
 			if(time > 30 && time <= 100){
@@ -276,7 +279,14 @@ public class Initiator {
 			}
 			if(time > 100 && time <= 200){
 				setTimetoRestore(75000);
-			}System.out.println("\nTime to reSend(ms) : " + getTimetoRestore());
+			}
+			if(time <= 10){
+				setTimetoRestore(15000);
+			}
+			System.out.println("\nTime to reSend(ms) : " + getTimetoRestore());
+		}
+		else{
+			System.out.println("\n\nFile doesn't exist in the Files Directory\n\n");
 		}
 		File file_restore_stored = new File("./Chunks");
 		if(file_restore_stored.listFiles() == null){ 
@@ -350,8 +360,29 @@ public class Initiator {
 					Thread.sleep((long)(Math.random() * 400));
 				} catch (InterruptedException e) {e.printStackTrace();}
 			}catch (Exception e){e.printStackTrace();}
-		}
 
+			//reSend
+			try {
+				System.out.println("\nSleeping 15000 ms \n");
+				Thread.sleep(15000);
+			} catch (InterruptedException e) {e.printStackTrace();}
+			System.out.println("\n\n\nRecending DELETE message to reforce\n\n\n");
+			try{
+				byte[] message_to_Send = CreateMessage.MessageToSendDelete(version, getPeerID(), fileHashName);
+				DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
+				socket_delete.send(msgDatagram_to_send);
+
+				System.out.println("\n Iniciator send delete message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
+				System.out.println("\n" + new String(message_to_Send));						
+				try {
+					Thread.sleep((long)(Math.random() * 400));
+				} catch (InterruptedException e) {e.printStackTrace();}
+			}catch (Exception e){e.printStackTrace();}
+			System.out.println("\n\n\n Stoped Recending DELETE message to reforce\n\n\n");
+		}
+		else{
+			System.out.println("\n\nFile doesn't exist in the Files Directory\n\n");
+		}
 	}
 	/*
 	public synchronized static void BackupAFile(String fileName, int repl_degree, int peerID_rec) throws IOException, NoSuchAlgorithmException{
