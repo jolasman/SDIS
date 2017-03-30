@@ -276,29 +276,35 @@ public class Peer  {
 							System.out.println("A DELETE Message received in MC Channel");
 							if(senderID_msg == Initiator.getPeerID()){}
 							else{
-								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+								System.out.println("A DELETE");
 								boolean haveChunk = true;
 								int chunkNO = 1;
-								int size = chunksalreadyReceived.size();
-
-								String toCheck = fileID_msg + chunkNO;
-								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
-									System.out.println("\n to check : " + toCheck);
-									System.out.println("\n to received : " + chunksalreadyReceived.get(i));
-									if(toCheck.equals(chunksalreadyReceived.get(i))){
-										chunkNO++;
-										
-										try{
-											File file = new File("./ChunksReceived/" + toCheck);
-											if(file.delete()){
-												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
-											}else{
-												System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
+								do{
+									ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+									int size = chunksalreadyReceived.size();
+									String toCheck = fileID_msg + chunkNO;
+									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+										System.out.println("\n to check : " + toCheck);
+										System.out.println("\n to received : " + chunksalreadyReceived.get(i));
+										if(toCheck.equals(chunksalreadyReceived.get(i))){
+											chunkNO++;
+											try{
+												File file = new File("./ChunksReceived/" + toCheck);
+												if(file.delete()){
+													System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
+												}else{
+													System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
+												}
+											}catch(Exception e){e.printStackTrace();}
+											DatabaseChunksReceived.getReceivedChunksID().remove(i);
+										}else{
+											if(i == size){
+												haveChunk = false;
 											}
-										}catch(Exception e){e.printStackTrace();}
-										DatabaseChunksReceived.getReceivedChunksID().remove(i);
-									}else{}
-								}
+										}
+									}
+
+								}while(haveChunk);
 							}
 							break;
 
