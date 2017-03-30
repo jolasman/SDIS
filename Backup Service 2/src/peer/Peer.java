@@ -215,7 +215,8 @@ public class Peer  {
 						}
 						else if(type_msg.equals("DELETE")){
 
-							if(senderID_msg == Initiator.getPeerID()){
+							if(senderID_msg == Initiator.getPeerID()){}
+							else{
 								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 								boolean haveChunk = true;
 								int chunkNO = 1;
@@ -223,6 +224,7 @@ public class Peer  {
 									String toCheck = fileID_msg + chunkNO;
 									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 										if(toCheck.equals(chunksalreadyReceived.get(i))){
+											chunkNO++;
 											try{
 												File file = new File("./ChunksReceived/" + toCheck);
 												if(file.delete()){
@@ -238,14 +240,6 @@ public class Peer  {
 										}
 									}			
 								}while(haveChunk);
-
-
-
-
-
-
-
-
 							}
 						}
 						else if(type_msg.equals("GETCHUNK")){
