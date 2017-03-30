@@ -294,17 +294,15 @@ public class Peer  {
 								}
 
 								System.out.println("A DELETE");
-								boolean haveChunk = true;
-								int chunkNO = 1;
-
+								
 								int size = chunksalreadyReceived.size();
 
 								Set<String> foo = new HashSet<String>();
 								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 									foo.add(chunksalreadyReceived.get(i));
 								}
-								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
-									String toCheck = fileID_msg + i;
+								for(int i = 0; i< size; i++){
+									String toCheck = fileID_msg + (i+1);
 									if (foo.contains(toCheck)) { 
 										try{
 											File file = new File("./ChunksReceived/" + toCheck);
