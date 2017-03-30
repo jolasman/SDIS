@@ -49,4 +49,12 @@ public class CreateMessage {
 		System.arraycopy(body,0,send_final,send.length,body.length);
 		return send_final;
 	}
+
+	//DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
+	public static synchronized byte[] MessageToSendDelete(char[] version, int senderID, String fileID){
+		byte[] send = new byte[2000];
+		String message = "DELETE" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + "\r\n\r\n"; 
+		send = message.getBytes();
+		return send;
+	}
 }

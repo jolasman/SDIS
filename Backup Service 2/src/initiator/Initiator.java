@@ -28,6 +28,7 @@ public class Initiator {
 	private volatile static MulticastSocket socket_restore; 
 	private volatile static MulticastSocket socket_Peers_Receive; 
 	private volatile static MulticastSocket socket_Peers_Send; 
+	private volatile static MulticastSocket socket_delete; 
 	private static int PORT_MC_Channel = 5000;
 	private static int PORT_MD_Channel = 5001;
 	private static int PORT_MDR_Channel = 5002;
@@ -47,14 +48,17 @@ public class Initiator {
 	private static int filesNo;
 	private static String file_Hash_Name;
 	private static String file_Hash_Name_Restore;
+	private static String file_Hash_Name_Delete;
 	private static String file_REAL_Name;
 	private static String file_REAL_Name_Restore;
+	private static String file_REAL_Name_Delete;
 	private static int NUMBER_OF_PEERS;
 	private static int activePeers;
 	private static int chunksforBackup;
 	private static int replicationDegree_backup;
 	private static int chunksforRestore;
 	private static boolean backupMode;
+	private static boolean deleteMode;
 	private static boolean restoreMode;
 	private static int timetoBackup;
 	private static int timetoRestore;
@@ -107,15 +111,15 @@ public class Initiator {
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
 			if(replication_degree_backup <= (getNUMBER_OF_PEERS()-1) ){ // por <=
-			System.out.println("\nStarting the backup of the file: " + file_backup);
-			BackupFileInitiator(file_backup,replication_degree_backup);
+				System.out.println("\nStarting the backup of the file: " + file_backup);
+				BackupFileInitiator(file_backup,replication_degree_backup);
 			}else{
-			System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ (getNUMBER_OF_PEERS()-1) );
+				System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ (getNUMBER_OF_PEERS()-1) );
 			}
 			break;
 		case 2: //restore
 			Scanner resp_restore = new Scanner(System.in);
-			System.out.print("\nChoose file to Restore and the Replication Degree:  Example :<file.pdf>\n");
+			System.out.print("\nChoose file to Restore:  Example : <file.pdf>\n");
 			String response_restore = resp_restore.nextLine();
 			String rsp_trimmed_restore = response_restore.trim();
 			ReceiveKnowPeersActive();
@@ -131,12 +135,16 @@ public class Initiator {
 			}
 			break;
 		case 3:
+			Scanner resp_delete = new Scanner(System.in);
+			System.out.print("\nChoose file to Delete:  Example : <file.pdf>\n");
+			String response_delete = resp_delete.nextLine();
+			String rsp_trimmed_delete = response_delete.trim();
 			ReceiveKnowPeersActive();
 			AlwaysSendingActvite();
 			//print funny loading text
 			ReceivePeersConsole();
 			TimeUnit.SECONDS.sleep(1);
-			DeleteFiles();
+			DeleteFiles(rsp_trimmed_delete);
 			break;
 		case 4:
 			File file = new File("./ChunksReceived");
@@ -319,7 +327,30 @@ public class Initiator {
 		socket_restore.close();		
 	}
 
-	public synchronized static void DeleteFiles() throws IOException, NoSuchAlgorithmException{
+	public synchronized static void DeleteFiles(String fileName) throws IOException, NoSuchAlgorithmException{
+		socket_delete = new MulticastSocket(getMcastPORT_Peers_Channel_receive());
+		setDeleteMode(true);
+		File filesize = new File("./Files/" + fileName);
+		if(filesize.exists()){
+
+			Peer peer_delete = new Peer(getPeerID());
+			File fileArgs = new File("./Files/" + fileName); 
+
+			String fileHashName = SHA256.ToSha256(fileArgs);
+			setFile_Hash_Name_Delete(fileHashName);
+			setFile_REAL_Name_Delete(fileName);
+			try{
+				byte[] message_to_Send = CreateMessage.MessageToSendDelete(version, getPeerID(), fileHashName);
+				DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
+				socket_delete.send(msgDatagram_to_send);
+
+				System.out.println("\n Iniciator send delete message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
+				System.out.println("\n" + new String(message_to_Send));						
+				try {
+					Thread.sleep((long)(Math.random() * 400));
+				} catch (InterruptedException e) {e.printStackTrace();}
+			}catch (Exception e){e.printStackTrace();}
+		}
 
 	}
 	/*
@@ -764,5 +795,29 @@ public class Initiator {
 
 	public static void setTimetoRestore(int timetoRestore) {
 		Initiator.timetoRestore = timetoRestore;
+	}
+
+	public static boolean isDeleteMode() {
+		return deleteMode;
+	}
+
+	public static void setDeleteMode(boolean deleteMode) {
+		Initiator.deleteMode = deleteMode;
+	}
+
+	public static String getFile_REAL_Name_Delete() {
+		return file_REAL_Name_Delete;
+	}
+
+	public static void setFile_REAL_Name_Delete(String file_REAL_Name_Delete) {
+		Initiator.file_REAL_Name_Delete = file_REAL_Name_Delete;
+	}
+
+	public static String getFile_Hash_Name_Delete() {
+		return file_Hash_Name_Delete;
+	}
+
+	public static void setFile_Hash_Name_Delete(String file_Hash_Name_Delete) {
+		Initiator.file_Hash_Name_Delete = file_Hash_Name_Delete;
 	}
 }

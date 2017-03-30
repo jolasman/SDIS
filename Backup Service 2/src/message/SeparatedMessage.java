@@ -53,7 +53,7 @@ public class SeparatedMessage {
 		
 	}
 	
-	public SeparatedMessage(String header, String chunk){
+/*	public SeparatedMessage(String header, String chunk){
 		if(chunk.equals("GETCHUNK")){
 			String header_trimed = header.trim();
 			String[] final_Header = header_trimed.split(" ");
@@ -67,9 +67,8 @@ public class SeparatedMessage {
 			senderID = Integer.parseInt(final_Header[2]);
 			fileID = final_Header[3];
 			chunkNo = Integer.parseInt(final_Header[4]);
-		}
-		
-	}
+		}		
+	}*/
 
 	public SeparatedMessage(String header){
 		String header_trimed = header.trim();
@@ -86,6 +85,7 @@ public class SeparatedMessage {
 		chunkNo = Integer.parseInt(final_Header[4]);
 	}
 
+	
 
 
 	public byte[] getBody() {

@@ -195,7 +195,7 @@ public class Peer  {
 						//String aa = new String(msg_received);
 						//System.out.println("\n mensagem recebida no MC : " + aa);
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
-						int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
+
 						String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
 						char[] version = MessageManager.SeparateMsgContentStored(msg_received).getVersion();
 						int senderID_msg = MessageManager.SeparateMsgContentStored(msg_received).getSenderID();
@@ -205,15 +205,52 @@ public class Peer  {
 						//System.out.println("\n type: " + type_msg );
 						if(type_msg.equals("STORED")){
 							setReceiveone(true);
+							int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 							if(senderID_msg == Initiator.getPeerID()){
 								// se for do proprio nao faz nada
 							}else{
 								DatabaseChunksReceived.setReceivedChunksID(fileID_msg+chunkNo_msg);
 							}
 						}
+						else if(type_msg.equals("DELETE")){
+
+							if(senderID_msg == Initiator.getPeerID()){
+								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
+								boolean haveChunk = true;
+								int chunkNO = 1;
+								do{
+									String toCheck = fileID_msg + chunkNO;
+									for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+										if(toCheck.equals(chunksalreadyReceived.get(i))){
+											try{
+												File file = new File("./ChunksReceived/" + toCheck);
+												if(file.delete()){
+													System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
+												}else{
+													System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
+												}
+											}catch(Exception e){e.printStackTrace();}
+										}else{
+											if(i == chunksalreadyReceived.size() ){
+												haveChunk = false;
+											}
+										}
+									}			
+								}while(haveChunk);
+
+
+
+
+
+
+
+
+							}
+						}
 						else if(type_msg.equals("GETCHUNK")){
 							setReceiveone(true);
 							setGetChunkMessage(true);
+							int chunkNo_msg = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 							if(senderID_msg == Initiator.getPeerID()){
 								// se for do proprio nao faz nada
 							}else{
