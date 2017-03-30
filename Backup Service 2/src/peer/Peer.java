@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -275,7 +277,7 @@ public class Peer  {
 							System.out.println("A DELETE Message received in MC Channel");
 							if(senderID_msg == Initiator.getPeerID()){}
 							else{
-								
+
 								ArrayList<String> chunksalreadyReceived = new ArrayList<String>();
 								File file1 = new File("./ChunksReceived");
 								if(file1.listFiles() == null){ 
@@ -290,36 +292,30 @@ public class Peer  {
 										chunksalreadyReceived.add(arquivos.getName());
 									}
 								}
-														
+
 								System.out.println("A DELETE");
 								boolean haveChunk = true;
 								int chunkNO = 1;
-								
+
 								int size = chunksalreadyReceived.size();
 
+								Set<String> foo = new HashSet<String>();
 								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
-									do{
-										String toCheck = fileID_msg + chunkNO;
-										System.out.println("\n to check : " + toCheck);
-										System.out.println("\n to received : " + chunksalreadyReceived.get(i));
-										if(toCheck.equals(chunksalreadyReceived.get(i))){
-											try{
-												File file = new File("./ChunksReceived/" + toCheck);
-												if(file.delete()){
-													System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
-												}else{
-													System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
-												}
-											}catch(Exception e){e.printStackTrace();}
-											DatabaseChunksReceived.getReceivedChunksID().remove(i);
-											chunkNO++;
-											haveChunk = false;
-										}else{
-											chunkNO++;
-											haveChunk = false;
-										}
+									foo.add(chunksalreadyReceived.get(i));
+								}
+								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
+									String toCheck = fileID_msg + i;
+									if (foo.contains(toCheck)) { 
+										try{
+											File file = new File("./ChunksReceived/" + toCheck);
+											if(file.delete()){
+												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
+											}else{
+												System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
+											}
+										}catch(Exception e){e.printStackTrace();}
+									}
 
-									}while(haveChunk);
 								}
 								System.out.println("\n\nDelete Chunks Done\n\n");
 
