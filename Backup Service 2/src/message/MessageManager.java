@@ -116,7 +116,7 @@ public class MessageManager {
 		return msgSeparated;
 	}
 	
-	/*public static synchronized SeparatedMessage SeparateMsgContentDelete(byte[] msg){
+	public static synchronized SeparatedMessage SeparateMsgContentDelete(byte[] msg){
 
 		byte[] original = msg;
 		byte[] header_byte = new byte[800];
@@ -134,8 +134,8 @@ public class MessageManager {
 			else{}
 		}
 		String delete = new String (header_byte);
-		SeparatedMessage msgSeparated = new SeparatedMessage(delete, "DELETE");	
+		SeparatedMessage msgSeparated = new SeparatedMessage(delete, true);	
 		return msgSeparated;
-	}*/
+	}
 
 }

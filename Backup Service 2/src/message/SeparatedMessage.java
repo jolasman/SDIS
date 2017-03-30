@@ -77,12 +77,38 @@ public class SeparatedMessage {
 		String msgType = final_Header[0].toUpperCase();
 		this.header = header;
 		type = msgType;
+		
 		version[0] = final_Header[1].charAt(0);
 		version[1] = final_Header[1].charAt(1);
 		version[2] = final_Header[1].charAt(2);
 		senderID = Integer.parseInt(final_Header[2]);
 		fileID = final_Header[3];
-		chunkNo = Integer.parseInt(final_Header[4]);
+		if(msgType.equals("STORED")){
+			chunkNo = Integer.parseInt(final_Header[4]);
+		}
+		if(msgType.equals("GETCHUNK")){
+			chunkNo = Integer.parseInt(final_Header[4]);
+		}
+		if(msgType.equals("DELETE")){
+			
+		}
+		
+		
+	}
+	public SeparatedMessage(String header, boolean delete){
+		if(delete){
+		String header_trimed = header.trim();
+		String[] final_Header = header_trimed.split(" ");
+
+		String msgType = final_Header[0].toUpperCase();
+		this.header = header;
+		type = msgType;
+		version[0] = final_Header[1].charAt(0);
+		version[1] = final_Header[1].charAt(1);
+		version[2] = final_Header[1].charAt(2);
+		senderID = Integer.parseInt(final_Header[2]);
+		fileID = final_Header[3];
+		}
 	}
 
 	

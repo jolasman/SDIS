@@ -194,8 +194,9 @@ public class Peer  {
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getData().length);	//msg recebida	//msg recebida
 						//String aa = new String(msg_received);
 						//System.out.println("\n mensagem recebida no MC : " + aa);
+						
+						
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
-
 						String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
 						char[] version = MessageManager.SeparateMsgContentStored(msg_received).getVersion();
 						int senderID_msg = MessageManager.SeparateMsgContentStored(msg_received).getSenderID();
