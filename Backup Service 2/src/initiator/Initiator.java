@@ -284,57 +284,60 @@ public class Initiator {
 				setTimetoRestore(15000);
 			}
 			System.out.println("\nTime to reSend(ms) : " + getTimetoRestore());
+
+			File file_restore_stored = new File("./Chunks");
+			if(file_restore_stored.listFiles() == null){ 
+				System.out.println("nenhum ficheiro na pasta");
+			}
+			else{ //carrega os ficheiros que estao na pagina Chunks
+				File afile[] = file_restore_stored.listFiles();
+				int i = 0;
+				System.out.println("\n");
+				for (int j = afile.length; i < j; i++) {
+					File arquivos = afile[i];
+					System.out.println("Loading chunks stored: " + arquivos.getName());
+					DatabaseChunksStored.StoreChunkID(arquivos.getName());
+				}
+			}
+			Peer peer_restore = new Peer(getPeerID());
+			File fileArgs = new File("./Files/" + fileName); 
+			ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
+			boolean haveChunk= true;
+			String fileHashName = SHA256.ToSha256(fileArgs);
+			setFile_Hash_Name_Restore(fileHashName);
+			setFile_REAL_Name_Restore(fileName);
+			int chunkNO = 1;		
+			do{
+				String chunkIDtoCheck = fileHashName + chunkNO;
+				for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+					if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
+						try{
+							//System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
+							byte[] message_to_Send = CreateMessage.MessageToSendGetChunk(version, getPeerID(), fileHashName + chunkNO, chunkNO);
+							DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
+							socket_restore.send(msgDatagram_to_send);
+
+							System.out.println("\n Iniciator send message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
+							System.out.println("\n" + new String(message_to_Send));					
+							chunkNO++;	
+							try {
+								Thread.sleep((long)(Math.random() * 400));
+							} catch (InterruptedException e) {e.printStackTrace();}
+						}catch (Exception e){e.printStackTrace();}
+					}else{
+						if(i == chunksAlreadyStored.size() ){
+							haveChunk = false;
+						}
+					}
+				}setChunksforRestore(chunkNO-1);			
+			}while(haveChunk);
+			socket_restore.close();	
 		}
 		else{
 			System.out.println("\n\nFile doesn't exist in the Files Directory\n\n");
 		}
-		File file_restore_stored = new File("./Chunks");
-		if(file_restore_stored.listFiles() == null){ 
-			System.out.println("nenhum ficheiro na pasta");
-		}
-		else{ //carrega os ficheiros que estao na pagina Chunks
-			File afile[] = file_restore_stored.listFiles();
-			int i = 0;
-			System.out.println("\n");
-			for (int j = afile.length; i < j; i++) {
-				File arquivos = afile[i];
-				System.out.println("Loading chunks stored: " + arquivos.getName());
-				DatabaseChunksStored.StoreChunkID(arquivos.getName());
-			}
-		}
-		Peer peer_restore = new Peer(getPeerID());
-		File fileArgs = new File("./Files/" + fileName); 
-		ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
-		boolean haveChunk= true;
-		String fileHashName = SHA256.ToSha256(fileArgs);
-		setFile_Hash_Name_Restore(fileHashName);
-		setFile_REAL_Name_Restore(fileName);
-		int chunkNO = 1;		
-		do{
-			String chunkIDtoCheck = fileHashName + chunkNO;
-			for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
-				if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
-					try{
-						//System.out.println("\n chunk   " + chunksAlreadyStored.get(i));
-						byte[] message_to_Send = CreateMessage.MessageToSendGetChunk(version, getPeerID(), fileHashName + chunkNO, chunkNO);
-						DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , getMcastAddr_Channel_MC(), getMcastPORT_MC_Channel());
-						socket_restore.send(msgDatagram_to_send);
 
-						System.out.println("\n Iniciator send message to: " + getMcastAddr_Channel_MC() + "----" + getMcastPORT_MC_Channel());
-						System.out.println("\n" + new String(message_to_Send));					
-						chunkNO++;	
-						try {
-							Thread.sleep((long)(Math.random() * 400));
-						} catch (InterruptedException e) {e.printStackTrace();}
-					}catch (Exception e){e.printStackTrace();}
-				}else{
-					if(i == chunksAlreadyStored.size() ){
-						haveChunk = false;
-					}
-				}
-			}setChunksforRestore(chunkNO-1);			
-		}while(haveChunk);
-		socket_restore.close();		
+
 	}
 
 	public synchronized static void DeleteFiles(String fileName) throws IOException, NoSuchAlgorithmException{

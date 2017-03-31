@@ -99,15 +99,10 @@ public class Peer  {
 						boolean stored = false;
 						boolean received = false;
 						String chunkIDtoCheck = fileID_msg+chunkNo_msg;
-						System.out.println("\nFile ID : " + fileID_msg);
-						System.out.println("chunkNo_msg : " + chunkNo_msg);
-						System.out.println("\repl_degree_msg : " + repl_degree_msg);
-						System.out.println("type_msg : " + type_msg);
 						if(senderID_msg == Initiator.getPeerID()){
 							//se for msg dele proprio nao faz nada
 						}else{
 							if(type_msg.equals("PUTCHUNK")){
-								//setSenderPeerID(senderID_msg);
 								ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
 								for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
@@ -175,7 +170,6 @@ public class Peer  {
 				setMinimum(false);
 				setStoredMessage(false);
 				setGetChunkMessage(false);
-				//System.out.println("\n\n backup mode : " + Initiator.isBackupMode() + "\n\n");
 				if(Initiator.isBackupMode()){
 					if(Initiator.getPeerID() == peerID){ // verifica se e o peer que pediu backup
 						new Timer().schedule(new TimerTask() {          
@@ -197,8 +191,6 @@ public class Peer  {
 						mcSocket_MC_Channel.receive(packet);
 						System.out.println("\nMc Control Channel received a new message from: " + packet.getAddress() + " ----- " + packet.getPort() + "\n");
 						byte[] msg_received = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());	//msg recebida	//msg recebida
-						//String aa = new String(msg_received);
-						//System.out.println("\n mensagem recebida no MC : " + aa);
 						String fileID_msg = MessageManager.SeparateMsgContentStored(msg_received).getFileID();
 						String type_msg = MessageManager.SeparateMsgContentStored(msg_received).getType();
 						char[] version = MessageManager.SeparateMsgContentStored(msg_received).getVersion();
@@ -294,11 +286,7 @@ public class Peer  {
 										chunksalreadyReceived.add(arquivos.getName());
 									}
 								}
-
-								System.out.println("A DELETE");
-
 								int size = chunksalreadyReceived.size();
-
 								Set<String> foo = new HashSet<String>();
 								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 									foo.add(chunksalreadyReceived.get(i));
@@ -315,18 +303,14 @@ public class Peer  {
 											}
 										}catch(Exception e){e.printStackTrace();}
 									}
-
 								}
 								System.out.println("\n\nDelete Chunks Done\n\n");
-
 							}
 							break;
 
 						default:
 							System.out.println("\nNOT a STORED,GETCHUNK or DELETE MEssage in MC Channel\n");
-
 						}
-
 					} 
 					catch (IOException e) {
 						System.out.println("\nError: Mc Control Channel when receiving in mcSocket_MC_Channel!\n");
@@ -414,7 +398,6 @@ public class Peer  {
 
 	}
 
-	
 public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException, InterruptedException{
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MD();
 		MulticastSocket socket_backup_reenvia = new MulticastSocket(Initiator.getMcastPORT_MD_Channel());
@@ -448,7 +431,6 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 					byte[] message_to_Send = CreateMessage.MessageToSendPut(Initiator.getVersion(), getPeerID(), fileID, chunkNo, replication_degree, body);
 					DatagramPacket msgDatagram_to_send = new DatagramPacket(message_to_Send , message_to_Send.length , mcastAddr, Initiator.getMcastPORT_MD_Channel());
 					socket_backup_reenvia.send(msgDatagram_to_send);
-					//System.out.println("\n" + "PUTCHUNK chunk No : " + chunkNo + "\n\n\n");	
 					System.out.println("\n Iniciator send message to: " + mcastAddr + "----" + Initiator.getMcastPORT_MD_Channel());
 				}catch (Exception e){e.printStackTrace();}
 				try {
@@ -460,16 +442,10 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 		if(Initiator.getPeerID() == peerID){
 			if(reSend){
 				System.out.println("\n Resending all chunks of file : " + Initiator.getFile_REAL_Name() + " with replication degree : " + Initiator.getReplicationDegree_backup() );
-				System.out.println("chunks for backup " + Initiator.getChunksforBackup());
-				System.out.println("replication degree" + Initiator.getReplicationDegree_backup());
-				System.out.println("numero de CHunkID" + IDs.size());
-
 				try {
 					System.out.println("Waiting to receive the Stored Messages ...");
 					Thread.sleep(15000);
-				}catch (Exception e) {
-					// TODO: handle exception
-				}
+				}catch (Exception e) {}
 				ReenviaPut();
 			}
 			else{
@@ -477,7 +453,6 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 				System.out.println("\n******** Received the minimum Stored Messages for each Chunk ********\n");
 			}
 		}
-
 	}
 
 	public synchronized void ReenviaGetChunk() throws NoSuchAlgorithmException, IOException, InterruptedException{
@@ -524,9 +499,7 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 			try {
 				System.out.println("Waiting to receive the chunks to Restore ...");
 				Thread.sleep(15000);
-			}catch (Exception e) {
-				// TODO: handle exception
-			}
+			}catch (Exception e) {}
 			ReenviaGetChunk();
 		}
 		else{
@@ -535,10 +508,7 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 			MergeChunks.MergeChunks(Chunk.getChunksRestore(), "merged_file__" + Initiator.getFile_REAL_Name_Restore());
 			Chunk.getChunksRestore().clear();
 		}
-
 	}
-
-
 
 	public int getPeerID() {
 		return peerID;
