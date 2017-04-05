@@ -85,90 +85,183 @@ public class Initiator {
 		mcastPORT_Peers_Channel = 1111;
 		mcastPORT_Peers_Channel_receive = 7777;
 
-		Scanner in = new Scanner(System.in);
-		System.out.println("\n1. Backup File");
-		System.out.println("2. Restore File");
-		System.out.println("3. Delete File");
-		System.out.println("4. Just iniciate the Peer (connect to the multicast channels)");
+		Scanner menu = new Scanner(System.in);
+		System.out.println("\n1. My Mode");
+		System.out.println("2. Works With Everyone");
 		System.out.println("0. Quit");
-		boolean quit = false;
-		int menuItem;
+
+		boolean sair = false;
+		int choose;
 		System.out.print("\nChoose menu item: ");
-		menuItem = in.nextInt();
-		switch (menuItem) {
-		case 1: //backup
-			Scanner resp_backup = new Scanner(System.in);
-			System.out.print("\nChoose file to Backup and the Replication Degree:  Example :<file.pdf> <2>\n");
-			String response_backup = resp_backup.nextLine();
-			String rsp_trimmed_backup = response_backup.trim();
-			String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
-			String file_backup = final_Resp_backup[0];
-			int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
-			setReplicationDegree_backup(replication_degree_backup);
-			ReceiveKnowPeersActive();
-			AlwaysSendingActvite();
-			//print funny loading text
-			ReceivePeersConsole();
-			TimeUnit.SECONDS.sleep(1);
-			if(replication_degree_backup <= (getNUMBER_OF_PEERS()-1) ){ // por <=
-				System.out.println("\nStarting the backup of the file: " + file_backup);
-				BackupFileInitiator(file_backup,replication_degree_backup);
-			}else{
-				System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ (getNUMBER_OF_PEERS()-1) );
-			}
-			break;
-		case 2: //restore
-			Scanner resp_restore = new Scanner(System.in);
-			System.out.print("\nChoose file to Restore:  Example : <file.pdf>\n");
-			String response_restore = resp_restore.nextLine();
-			String rsp_trimmed_restore = response_restore.trim();
-			ReceiveKnowPeersActive();
-			AlwaysSendingActvite();
-			//print funny loading text
-			ReceivePeersConsole();
-			TimeUnit.SECONDS.sleep(1);
-			if(getNUMBER_OF_PEERS() >= 1){ // por a 1
-				System.out.println("\nStarting the restore of the file: " + rsp_trimmed_restore);
-				RestoreFiles(rsp_trimmed_restore);
-			}else{
-				System.out.println("\nYou need at least on Peer to restore a file!");
-			}
-			break;
-		case 3:
-			Scanner resp_delete = new Scanner(System.in);
-			System.out.print("\nChoose file to Delete:  Example : <file.pdf>\n");
-			String response_delete = resp_delete.nextLine();
-			String rsp_trimmed_delete = response_delete.trim();
-			ReceiveKnowPeersActive();
-			AlwaysSendingActvite();
-			//print funny loading text
-			ReceivePeersConsole();
-			TimeUnit.SECONDS.sleep(1);
-			DeleteFiles(rsp_trimmed_delete);
-			break;
-		case 4:
-			File file = new File("./ChunksReceived");
-			if(file.listFiles() == null){ 
-				System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + getPeerID() );
-			}
-			else{
-				File afile[] = file.listFiles();
-				int i = 0;
-				for (int j = afile.length; i < j; i++) {
-					File arquivos = afile[i];
-					System.out.println("Peer : " + getPeerID() + " Load chunks received: " + arquivos.getName());
-					DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+		choose = menu.nextInt();
+		switch (choose) {
+		case 1:
+			Scanner in = new Scanner(System.in);
+			System.out.println("\n1. Backup File");
+			System.out.println("2. Restore File");
+			System.out.println("3. Delete File");
+			System.out.println("4. Just iniciate the Peer (connect to the multicast channels)");
+			System.out.println("0. Quit");
+			boolean quit = false;
+			int menuItem;
+			System.out.print("\nChoose menu item: ");
+			menuItem = in.nextInt();
+			switch (menuItem) {
+			case 1: //backup
+				Scanner resp_backup = new Scanner(System.in);
+				System.out.print("\nChoose file to Backup and the Replication Degree:  Example :<file.pdf> <2>\n");
+				String response_backup = resp_backup.nextLine();
+				String rsp_trimmed_backup = response_backup.trim();
+				String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
+				String file_backup = final_Resp_backup[0];
+				int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
+				setReplicationDegree_backup(replication_degree_backup);
+				ReceiveKnowPeersActive();
+				AlwaysSendingActvite();
+				//print funny loading text
+				ReceivePeersConsole();
+				TimeUnit.SECONDS.sleep(1);
+				if(replication_degree_backup <= (getNUMBER_OF_PEERS()-1) ){ // por <=
+					System.out.println("\nStarting the backup of the file: " + file_backup);
+					BackupFileInitiator(file_backup,replication_degree_backup);
+				}else{
+					System.out.println("\nYou need "+ replication_degree_backup +" Peers to backup! But you only have "+ (getNUMBER_OF_PEERS()-1) );
 				}
+				break;
+			case 2: //restore
+				Scanner resp_restore = new Scanner(System.in);
+				System.out.print("\nChoose file to Restore:  Example : <file.pdf>\n");
+				String response_restore = resp_restore.nextLine();
+				String rsp_trimmed_restore = response_restore.trim();
+				ReceiveKnowPeersActive();
+				AlwaysSendingActvite();
+				//print funny loading text
+				ReceivePeersConsole();
+				TimeUnit.SECONDS.sleep(1);
+				if(getNUMBER_OF_PEERS()-1 >= 1){ // por a 1
+					System.out.println("\nStarting the restore of the file: " + rsp_trimmed_restore);
+					RestoreFiles(rsp_trimmed_restore);
+				}else{
+					System.out.println("\nYou need at least on Peer to restore a file!");
+				}
+				break;
+			case 3:
+				Scanner resp_delete = new Scanner(System.in);
+				System.out.print("\nChoose file to Delete:  Example : <file.pdf>\n");
+				String response_delete = resp_delete.nextLine();
+				String rsp_trimmed_delete = response_delete.trim();
+				ReceiveKnowPeersActive();
+				AlwaysSendingActvite();
+				//print funny loading text
+				ReceivePeersConsole();
+				TimeUnit.SECONDS.sleep(1);
+				if(getNUMBER_OF_PEERS()-1 >= 1){ // por a 1
+					System.out.println("\nStarting the delete process of the file: " + rsp_trimmed_delete);
+					DeleteFiles(rsp_trimmed_delete);
+				}else{
+					System.out.println("\nYou need at least on Peer to restore a file!");
+				}
+				break;
+			case 4:
+				File file = new File("./ChunksReceived");
+				if(file.listFiles() == null){ 
+					System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + getPeerID() );
+				}
+				else{
+					File afile[] = file.listFiles();
+					int i = 0;
+					for (int j = afile.length; i < j; i++) {
+						File arquivos = afile[i];
+						System.out.println("Peer : " + getPeerID() + " Load chunks received: " + arquivos.getName());
+						DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+					}
+				}
+				Peer newPeer = new Peer(getPeerID());
+				AlwaysSendingActvite();
+				break;	
+			case 0:
+				sair = true;
+				break;
+			default:
+				System.out.println("Invalid choice.");
 			}
-			Peer newPeer = new Peer(getPeerID());
-			AlwaysSendingActvite();
-			break;			
+			break;
+
+			/*************************************************/
+
+		case 2:
+			Scanner input = new Scanner(System.in);
+			System.out.println("\n1. Backup File");
+			System.out.println("2. Restore File");
+			System.out.println("3. Delete File");
+			System.out.println("4. Just iniciate the Peer (connect to the multicast channels)");
+			System.out.println("0. Quit");
+			boolean out = false;
+			int menuItemChoose;
+			System.out.print("\nChoose menu item: ");
+			menuItemChoose = input.nextInt();
+			switch (menuItemChoose) {
+			case 1: //backup
+				Scanner resp_backup = new Scanner(System.in);
+				System.out.print("\nChoose file to Backup and the Replication Degree:  Example :<file.pdf> <2>\n");
+				String response_backup = resp_backup.nextLine();
+				String rsp_trimmed_backup = response_backup.trim();
+				String[] final_Resp_backup = rsp_trimmed_backup.split(" ");
+				String file_backup = final_Resp_backup[0];
+				int replication_degree_backup = Integer.parseInt(final_Resp_backup[1]);
+				setReplicationDegree_backup(replication_degree_backup);
+				BackupFileInitiator(file_backup,replication_degree_backup);
+				break;
+			case 2: //restore
+				Scanner resp_restore = new Scanner(System.in);
+				System.out.print("\nChoose file to Restore:  Example : <file.pdf>\n");
+				String response_restore = resp_restore.nextLine();
+				String rsp_trimmed_restore = response_restore.trim();
+				RestoreFiles(rsp_trimmed_restore);
+				break;
+			case 3:
+				Scanner resp_delete = new Scanner(System.in);
+				System.out.print("\nChoose file to Delete:  Example : <file.pdf>\n");
+				String response_delete = resp_delete.nextLine();
+				String rsp_trimmed_delete = response_delete.trim();
+				DeleteFiles(rsp_trimmed_delete);
+				break;
+			case 4:
+				File file = new File("./ChunksReceived");
+				if(file.listFiles() == null){ 
+					System.out.println("nenhum ficheiro na pasta ChunksReceived. Peer:" + getPeerID() );
+				}
+				else{
+					File afile[] = file.listFiles();
+					int i = 0;
+					for (int j = afile.length; i < j; i++) {
+						File arquivos = afile[i];
+						System.out.println("Peer : " + getPeerID() + " Load chunks received: " + arquivos.getName());
+						DatabaseChunksReceived.setReceivedChunksID(arquivos.getName());
+					}
+				}
+				Peer newPeer = new Peer(getPeerID());
+				AlwaysSendingActvite();
+				break;	
+			case 0:
+				out = true;
+				break;
+			default:
+				System.out.println("Invalid choice.");
+			}
+
+			break;
+			/*********************************************************/
+
 		case 0:
-			quit = true;
+			sair = true;
 			break;
 		default:
 			System.out.println("Invalid choice.");
 		}
+
+
+
 	}
 
 	//backup
@@ -387,7 +480,7 @@ public class Initiator {
 			System.out.println("\n\nFile doesn't exist in the Files Directory\n\n");
 		}
 	}
-	
+
 	public static void ReceivePeersConsole() throws InterruptedException{
 		System.out.print("\n\nReceiving how many Peers are in the System ");
 		System.out.print("[0%--");
