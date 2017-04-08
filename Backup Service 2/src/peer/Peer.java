@@ -109,7 +109,7 @@ public class Peer  {
 							if(type_msg.equals("PUTCHUNK")){
 								ArrayList<String> chunksAlreadyStored = DatabaseChunksStored.getChunkIDStored();
 								ArrayList<String> chunksalreadyReceived = DatabaseChunksReceived.getReceivedChunksID();
-								for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
+								/*for(int i = 0; i< chunksAlreadyStored.size(); i++ ){
 									if(chunkIDtoCheck.equals(chunksAlreadyStored.get(i))){
 										stored = true;
 										System.out.println("\nPeer " + getPeerID() + " not store chunk. It's a chunk sent by him\n");
@@ -121,7 +121,7 @@ public class Peer  {
 										received = true;
 										System.out.println("\nPeer " + getPeerID() + " already have that chunk. Not Stored.\n");
 									}
-								}
+								}*/
 								if(!received){
 									if(!stored){
 										Chunk newChunk = new Chunk(fileID_msg, chunkNo_msg, filedata_msg, repl_degree_msg, local_path);
