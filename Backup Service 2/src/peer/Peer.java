@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -302,6 +303,14 @@ public class Peer  {
 											File file = new File("./ChunksReceived/" + toCheck);
 											if(file.delete()){
 												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
+												
+												Iterator<String>iterator = DatabaseChunksReceived.getReceivedChunksID().iterator();
+												while(iterator.hasNext()){
+													if(iterator.next().equals(toCheck)){
+														iterator.remove();
+													}
+												}
+												
 												byte[] message_to_MDR = CreateMessage.MessageToSendRemoved(version, getPeerID(), fileID_msg, (i+1));
 												DatagramPacket msgDatagram_to_send_MC = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 												try {
@@ -338,7 +347,7 @@ public class Peer  {
 							}
 							else{
 								String nameID = fileID_msg + chunkNo_msg_Removed;
-								boolean found = false;
+
 								HashMap<String, Integer> remote = getRemoteChunks();
 
 								for (String key:remote.keySet()){
@@ -347,8 +356,8 @@ public class Peer  {
 										setRemoteChunks(nameID, remoteChunks.get(nameID)-1);
 									}
 								}
-								remoteChunks.forEach((k,v)-> System.out.println(k+", "+v));
-							
+								getRemoteChunks().forEach((k,v)-> System.out.println(k+", "+v));
+
 							}
 
 
