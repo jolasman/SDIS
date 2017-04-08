@@ -303,7 +303,7 @@ public class Peer  {
 											if(file.delete()){
 												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
 												byte[] message_to_MDR = CreateMessage.MessageToSendRemoved(version, getPeerID(), fileID_msg, (i+1));
-												DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+												DatagramPacket msgDatagram_to_send_MC = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 												try {
 													Thread.sleep((long)(Math.random() * 400));
 												}  catch (InterruptedException e1) {
@@ -311,7 +311,7 @@ public class Peer  {
 													e1.printStackTrace();
 												}
 												try{
-													mcSocket_REMOVED_SEND.send(msgDatagram_to_send_MDR);
+													mcSocket_REMOVED_SEND.send(msgDatagram_to_send_MC);
 													System.out.println("\nPeer: " + getPeerID() + " sending a Removed message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
 												} catch (Exception e) {
 													System.out.println("\nPeer: " + getPeerID() + " ERROR sending a Removed message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
@@ -355,7 +355,7 @@ public class Peer  {
 							break;
 
 						default:
-							System.out.println("\nNOT a STORED,GETCHUNK or DELETE MEssage in MC Channel\n");
+							System.out.println("\nNOT a STORED,GETCHUNK, REMOVED or DELETE MEssage in MC Channel\n");
 						}
 					} 
 					catch (IOException e) {
