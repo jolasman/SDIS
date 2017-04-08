@@ -15,8 +15,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,6 +48,7 @@ public class Peer  {
 	private volatile MulticastSocket mcSocket_MC_Channel;
 	private volatile MulticastSocket mcSocket_to_MDR_Channel;
 	private volatile MulticastSocket mcSocket_MDR_receive;
+	private volatile MulticastSocket mcSocket_REMOVED_SEND;
 
 	private String local_path = "./ChunksReceived";
 	private String local_path_getchunk = "./ChunksToRestore";
@@ -59,7 +62,7 @@ public class Peer  {
 	private boolean getChunkMessage;
 	private boolean receivedChunk;
 	private boolean receivedOneChunk;
-
+	private static HashMap<String,Integer> remoteChunks = new HashMap<String,Integer>();
 
 	//como dar um peerID unico a cada um do sistema?
 	public Peer(int peerID) throws IOException{
@@ -158,6 +161,7 @@ public class Peer  {
 
 	public synchronized void McChannel() throws IOException{
 		mcSocket_MC_Channel = new MulticastSocket(Initiator.getMcastPORT_MC_Channel());
+		mcSocket_REMOVED_SEND = new MulticastSocket(Initiator.getMcastPORT_MC_Channel());
 		mcSocket_to_MDR_Channel = new MulticastSocket(Initiator.getMcastPORT_MDR_Channel());
 		InetAddress mcastAddr_MC = Initiator.getMcastAddr_Channel_MC();
 		mcSocket_MC_Channel.joinGroup(mcastAddr_MC);
@@ -290,7 +294,7 @@ public class Peer  {
 								Set<String> foo = new HashSet<String>();
 								for(int i = 0; i< chunksalreadyReceived.size(); i++ ){
 									foo.add(chunksalreadyReceived.get(i));
-								}
+								} 
 								for(int i = 0; i< size; i++){
 									String toCheck = fileID_msg + (i+1);
 									if (foo.contains(toCheck)) { 
@@ -298,14 +302,56 @@ public class Peer  {
 											File file = new File("./ChunksReceived/" + toCheck);
 											if(file.delete()){
 												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
+												byte[] message_to_MDR = CreateMessage.MessageToSendRemoved(version, getPeerID(), fileID_msg, (i+1));
+												DatagramPacket msgDatagram_to_send_MDR = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MDR(), Initiator.getMcastPORT_MDR_Channel());
+												try {
+													Thread.sleep((long)(Math.random() * 400));
+												}  catch (InterruptedException e1) {
+													System.out.println("\nRemoved can not sleep");
+													e1.printStackTrace();
+												}
+												try{
+													mcSocket_REMOVED_SEND.send(msgDatagram_to_send_MDR);
+													System.out.println("\nPeer: " + getPeerID() + " sending a Removed message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
+												} catch (Exception e) {
+													System.out.println("\nPeer: " + getPeerID() + " ERROR sending a Removed message to: \n" + Initiator.getMcastAddr_Channel_MC() + " ----- " + Initiator.getMcastPORT_MC_Channel());
+
+												}
+
 											}else{
-												System.out.println("Delete operation is failed! --> Peer: " + getPeerID());
+												System.out.println("\n	Delete operation is failed! --> Peer: " + getPeerID() + " --> chunk : " + file.getName() + (i+1) + " not deleted\n");
 											}
 										}catch(Exception e){e.printStackTrace();}
 									}
 								}
-								System.out.println("\n\nDelete Chunks Done\n\n");
+								System.out.println("\n\nPeer : "+ getPeerID() + " -->Attempt to Delete Chunks Done\n\n");
 							}
+							break;
+
+
+						case "REMOVED":
+							System.out.println("A REMOVED Message received in MC Channel");
+							int chunkNo_msg_Removed = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
+
+							if(senderID_msg == Initiator.getPeerID()){
+								/*se fui eu a enviar nao faco nada*/
+							}
+							else{
+								String nameID = fileID_msg + chunkNo_msg_Removed;
+								boolean found = false;
+								HashMap<String, Integer> remote = getRemoteChunks();
+
+								for (String key:remote.keySet()){
+									if (remote.containsKey(nameID))
+									{
+										setRemoteChunks(nameID, remoteChunks.get(nameID)-1);
+									}
+								}
+								remoteChunks.forEach((k,v)-> System.out.println(k+", "+v));
+							
+							}
+
+
 							break;
 
 						default:
@@ -398,13 +444,14 @@ public class Peer  {
 
 	}
 
-public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException, InterruptedException{
+	public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOException, InterruptedException{
 		InetAddress mcastAddr = Initiator.getMcastAddr_Channel_MD();
 		MulticastSocket socket_backup_reenvia = new MulticastSocket(Initiator.getMcastPORT_MD_Channel());
 		ArrayList<String> IDs = DatabaseChunksReceived.getReceivedChunksID();
 		ArrayList<Integer> chunks = new ArrayList<Integer>(Initiator.getChunksforBackup());
 		boolean reSend = false;
 		for (int i = 0; i < Initiator.getChunksforBackup() +1; i++) {chunks.add(0);}
+
 		if(Initiator.getPeerID() == peerID){ // verifica se e o peer que pediu backup
 			for(int i = 0; i < Initiator.getChunksforBackup(); i++){ // por cada chunk 
 				int count = 0;
@@ -413,6 +460,7 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 					if(name.equals(IDs.get(j))){ // se o hashname + chunkNo ==  chunkID da stored message received
 						count++;
 						chunks.set(i,count);// muda a posicao i para o valor do count
+						setRemoteChunks(name, count);
 					}
 				}
 			}			
@@ -451,6 +499,7 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 			else{
 				for (int j = 0; j < 25; ++j) System.out.println();
 				System.out.println("\n******** Received the minimum Stored Messages for each Chunk ********\n");
+				remoteChunks.forEach((k,v)-> System.out.println(k+", "+v));
 			}
 		}
 	}
@@ -566,6 +615,30 @@ public synchronized void ReenviaPut() throws NoSuchAlgorithmException, IOExcepti
 	}
 	public void setReceivedOneChunk(boolean receivedOneChunk) {
 		this.receivedOneChunk = receivedOneChunk;
+	}
+	public static MulticastSocket getSocket_backup() {
+		return socket_backup;
+	}
+	public static void setSocket_backup(MulticastSocket socket_backup) {
+		Peer.socket_backup = socket_backup;
+	}
+	public static MulticastSocket getSocket_restore() {
+		return socket_restore;
+	}
+	public static void setSocket_restore(MulticastSocket socket_restore) {
+		Peer.socket_restore = socket_restore;
+	}
+	public MulticastSocket getMcSocket_REMOVED_SEND() {
+		return mcSocket_REMOVED_SEND;
+	}
+	public void setMcSocket_REMOVED_SEND(MulticastSocket mcSocket_REMOVED_SEND) {
+		this.mcSocket_REMOVED_SEND = mcSocket_REMOVED_SEND;
+	}
+	public static HashMap<String,Integer> getRemoteChunks() {
+		return remoteChunks;
+	}
+	public static void setRemoteChunks(String key, int value) {
+		remoteChunks.put(key, value);
 	}
 
 }

@@ -89,6 +89,9 @@ public class SeparatedMessage {
 		if(msgType.equals("GETCHUNK")){
 			chunkNo = Integer.parseInt(final_Header[4]);
 		}
+		if(msgType.equals("REMOVED")){
+			chunkNo = Integer.parseInt(final_Header[4]);
+		}
 		if(msgType.equals("DELETE")){
 			
 		}

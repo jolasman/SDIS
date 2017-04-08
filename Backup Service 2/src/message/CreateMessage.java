@@ -57,4 +57,12 @@ public class CreateMessage {
 		send = message.getBytes();
 		return send;
 	}
+	
+	//REMOVED <Version> <SenderId> <FileId> <chunkNo> <CRLF><CRLF>
+		public static synchronized byte[] MessageToSendRemoved(char[] version, int senderID, String fileID, int chunkNo){
+			String message = "REMOVED" + " " + version[0]+version[1]+version[2] + " " + senderID + " "+ fileID + " " + chunkNo + " " + "\r\n\r\n"; 
+			byte[] send = new byte[message.getBytes().length];
+			send = message.getBytes();
+			return send;
+		}
 }
