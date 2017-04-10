@@ -1,6 +1,8 @@
 package initiator;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -8,6 +10,7 @@ import java.net.MulticastSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -62,6 +65,7 @@ public class Initiator {
 	private static boolean restoreMode;
 	private static int timetoBackup;
 	private static int timetoRestore;
+	private static HashMap<String,Integer> chunksDegree = new HashMap<String,Integer>();
 
 
 	@SuppressWarnings({ "unused", "resource" })
@@ -265,7 +269,7 @@ public class Initiator {
 	}
 
 	//backup
-	public synchronized static void BackupFileInitiator(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{
+	public synchronized static void BackupFileInitiator(String fileName, int repl_degree) throws IOException, NoSuchAlgorithmException{	
 		File filesize = new File("./Files/" + fileName);
 		if(filesize.exists()){
 			double size = filesize.length();
@@ -297,6 +301,19 @@ public class Initiator {
 			setFile_Hash_Name(fileHashName);
 			setFile_REAL_Name(fileName);
 			setBackupMode(true);
+			setChunksDegree(fileHashName,repl_degree);
+			
+			try{
+				File fileOne=new File("chunksDegree");
+				FileOutputStream fos=new FileOutputStream(fileOne);
+				ObjectOutputStream oos=new ObjectOutputStream(fos);
+
+				oos.writeObject(getChunksDegree());
+				oos.flush();
+				oos.close();
+				fos.close();
+			}catch(Exception e){}
+					
 			DatabasePeerID.StorePeerID(getPeerID());
 			File file = new File("./ChunksReceived");
 			if(file.listFiles() == null){ 
@@ -827,5 +844,13 @@ public class Initiator {
 
 	public static void setFile_Hash_Name_Delete(String file_Hash_Name_Delete) {
 		Initiator.file_Hash_Name_Delete = file_Hash_Name_Delete;
+	}
+
+	public static HashMap<String,Integer> getChunksDegree() {
+		return chunksDegree;
+	}
+
+	public static void setChunksDegree(String file_Hash_ID, int replication_degree) {
+		chunksDegree.put(file_Hash_ID, replication_degree);
 	}
 }

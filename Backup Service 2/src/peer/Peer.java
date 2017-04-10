@@ -4,8 +4,10 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -19,7 +21,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,6 +68,7 @@ public class Peer  {
 	private boolean receivedChunk;
 	private boolean receivedOneChunk;
 	private static HashMap<String,Integer> remoteChunks = new HashMap<String,Integer>();
+	private static HashMap<String,Integer> replicationDegree = new HashMap<String,Integer>();
 
 	//como dar um peerID unico a cada um do sistema?
 	public Peer(int peerID) throws IOException{
@@ -74,6 +79,7 @@ public class Peer  {
 		McDataRecovery();
 
 	}
+
 	@SuppressWarnings("unused")
 	public synchronized void  McDataChannel() throws IOException{
 		mcSocket_receive = new MulticastSocket(Initiator.getMcastPORT_MD_Channel());
@@ -166,6 +172,37 @@ public class Peer  {
 		mcSocket_to_MDR_Channel = new MulticastSocket(Initiator.getMcastPORT_MDR_Channel());
 		InetAddress mcastAddr_MC = Initiator.getMcastAddr_Channel_MC();
 		mcSocket_MC_Channel.joinGroup(mcastAddr_MC);
+		//aceder ao remote chunks
+		if(Initiator.isDeleteMode()){
+			try{
+				File toRead=new File("remoteChunks");
+				if(toRead.exists() && !toRead.isDirectory()) { 
+					FileInputStream fis=new FileInputStream(toRead);
+					ObjectInputStream ois=new ObjectInputStream(fis);
+					HashMap<String,Integer> mapInFile=(HashMap<String,Integer>)ois.readObject();
+					ois.close();
+					fis.close();
+					for(Map.Entry<String, Integer> copy :mapInFile.entrySet()){
+						setRemoteChunks(copy.getKey(), copy.getValue());
+					}
+				}
+			}catch (Exception e) {}
+
+			try{
+				File toRead=new File("chunksDegree");
+				if(toRead.exists() && !toRead.isDirectory()) { 
+					FileInputStream fis=new FileInputStream(toRead);
+					ObjectInputStream ois=new ObjectInputStream(fis);
+					HashMap<String,Integer> filemap=(HashMap<String,Integer>)ois.readObject();
+					ois.close();
+					fis.close();
+					for(Map.Entry<String, Integer> copy :filemap.entrySet()){
+						setReplicationDegree(copy.getKey(), copy.getValue());
+					}
+				}
+			}catch (Exception e) {}
+		}
+
 		Thread mc = new Thread(){
 			public void run(){
 				System.out.println("\nMc Control Channel Started...");
@@ -303,14 +340,14 @@ public class Peer  {
 											File file = new File("./ChunksReceived/" + toCheck);
 											if(file.delete()){
 												System.out.println(file.getName() + " is deleted! --> Peer: " + getPeerID());
-												
+
 												Iterator<String>iterator = DatabaseChunksReceived.getReceivedChunksID().iterator();
 												while(iterator.hasNext()){
 													if(iterator.next().equals(toCheck)){
 														iterator.remove();
 													}
 												}
-												
+
 												byte[] message_to_MDR = CreateMessage.MessageToSendRemoved(version, getPeerID(), fileID_msg, (i+1));
 												DatagramPacket msgDatagram_to_send_MC = new DatagramPacket(message_to_MDR , message_to_MDR.length , Initiator.getMcastAddr_Channel_MC(), Initiator.getMcastPORT_MC_Channel());
 												try {
@@ -339,31 +376,41 @@ public class Peer  {
 
 
 						case "REMOVED":
-							System.out.println("A REMOVED Message received in MC Channel");
-							int chunkNo_msg_Removed = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
+							Thread Remove = new Thread(){
+								public void run(){
+									System.out.println("A REMOVED Message received in MC Channel");
+									int chunkNo_msg_Removed = MessageManager.SeparateMsgContentStored(msg_received).getChunkNo();
 
-							if(senderID_msg == Initiator.getPeerID()){
-								/*se fui eu a enviar nao faco nada*/
-							}
-							else{
-								String nameID = fileID_msg + chunkNo_msg_Removed;
+									if(senderID_msg == Initiator.getPeerID()){
+										/*se fui eu a enviar nao faco nada*/
+									}
+									else{
+										String nameID = fileID_msg + chunkNo_msg_Removed;					
+										//print All data in MAP
+										for(Map.Entry<String,Integer> change :getRemoteChunks().entrySet()){
+											if(change.getKey().equals(nameID)){
+												System.out.println("\nUpdating replication degree information of chunkID : " + nameID);
+												setRemoteChunks(nameID, getRemoteChunks().get(nameID) - 1);
+												if( (getRemoteChunks().get(nameID) - 1) >= 1){
+													
+												}
+												/*else{ 
+													System.out.println("\nReplication degree of one chunk of the file: " + fileID_msg + " is down!" );
+													System.out.println("\n\n	Starting a new backup for the file " + fileID_msg + "\n\n" );
+													try {
+														Initiator.BackupFileInitiator(Initiator.getFile_REAL_Name(), replication_degree);
+													} catch (NoSuchAlgorithmException | IOException e) {e.printStackTrace();}
+												}*/
+											}
+										}
 
-								HashMap<String, Integer> remote = getRemoteChunks();
+										for(Map.Entry<String,Integer> m :getRemoteChunks().entrySet()){
+											System.out.println("\n\n" + m.getKey()+" : "+m.getValue());
+										}							
+									}
 
-				
-								getRemoteChunks().forEach((k,v)-> System.out.println(k+", "+v));
-
-							    Set<String> chaves = remote.keySet();  
-							    for (Iterator<String> it = chaves.iterator(); it.hasNext();){  
-							        String chave = it.next();  
-							        if(chave.equals(nameID)){  
-							            System.out.println(chave + remote.get(chave));  
-							        }
-							    } 
-								
-							
-								
-							}
+								}
+							};Remove.start();
 
 
 							break;
@@ -514,6 +561,18 @@ public class Peer  {
 				for (int j = 0; j < 25; ++j) System.out.println();
 				System.out.println("\n******** Received the minimum Stored Messages for each Chunk ********\n");
 				remoteChunks.forEach((k,v)-> System.out.println(k+", "+v));
+
+				//guarda dados localmente
+				try{
+					File fileOne=new File("remoteChunks");
+					FileOutputStream fos=new FileOutputStream(fileOne);
+					ObjectOutputStream oos=new ObjectOutputStream(fos);
+
+					oos.writeObject(getRemoteChunks());
+					oos.flush();
+					oos.close();
+					fos.close();
+				}catch(Exception e){}
 			}
 		}
 	}
@@ -652,6 +711,13 @@ public class Peer  {
 		return remoteChunks;
 	}
 	public static void setRemoteChunks(String key, int value) {
+		remoteChunks.put(key, value);
+	}
+
+	public static HashMap<String, Integer> getReplicationDegree() {
+		return replicationDegree;
+	}
+	public static void setReplicationDegree(String key, int value) {
 		remoteChunks.put(key, value);
 	}
 
