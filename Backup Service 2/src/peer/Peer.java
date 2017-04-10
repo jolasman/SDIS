@@ -350,14 +350,19 @@ public class Peer  {
 
 								HashMap<String, Integer> remote = getRemoteChunks();
 
-								for (String key:remote.keySet()){
-									if (remote.containsKey(nameID))
-									{
-										setRemoteChunks(nameID, remoteChunks.get(nameID)-1);
-									}
-								}
+				
 								getRemoteChunks().forEach((k,v)-> System.out.println(k+", "+v));
 
+							    Set<String> chaves = remote.keySet();  
+							    for (Iterator<String> it = chaves.iterator(); it.hasNext();){  
+							        String chave = it.next();  
+							        if(chave.equals(nameID)){  
+							            System.out.println(chave + remote.get(chave));  
+							        }
+							    } 
+								
+								
+								
 							}
 
 
